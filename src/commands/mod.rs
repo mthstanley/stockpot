@@ -1,6 +1,6 @@
 use clap::{AppSettings, Parser};
 
-mod server;
+pub mod server;
 
 #[derive(Parser)]
 #[clap(

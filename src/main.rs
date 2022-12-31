@@ -1,17 +1,27 @@
+use anyhow::Ok;
 use clap::Parser;
-use commands::{RootCommand, SubCommand};
 use dotenvy::dotenv;
+use log::info;
+use stockpot::{
+    commands::{RootCommand, SubCommand},
+    http,
+};
 
 mod commands;
 
-fn main() {
-    dotenv().expect(".env file not found");
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
+    dotenv().ok();
+    env_logger::init();
 
     let app: RootCommand = RootCommand::parse();
 
     match app.subcmd {
         SubCommand::Server(s) => {
-            println!("Starting server at {}", s.host);
+            info!("Starting server at {}", s.addr);
+            http::server(s).await?;
         }
     }
+
+    Ok(())
 }

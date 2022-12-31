@@ -7,8 +7,8 @@ pub struct RootCommand {
     #[clap(
         value_parser,
         default_value = "127.0.0.1:8080",
-        env = "HOST",
+        env = "ADDR",
         value_name = "HOST_AND_PORT"
     )]
-    pub host: SocketAddr,
+    pub addr: SocketAddr,
 }
