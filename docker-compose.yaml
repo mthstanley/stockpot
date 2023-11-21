@@ -7,11 +7,26 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       PGDATA: /data/postgres
+      POSTGRES_DB: stockpot
     volumes:
       - postgres:/data/postgres
     ports:
       - "5432:5432"
     restart: unless-stopped
+
+  # use sqlx cli:
+  # docker-compose run -it --entrypoint sh migrate
+  migrate:
+    build:
+      context: .
+      dockerfile: docker/sqlxcli.dockerfile
+    volumes:
+      - "./migrations:/app/migrations"
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres/stockpot
+    entrypoint: sh -c "./sqlx database create; ./sqlx migrate run"
+    depends_on:
+      - postgres
 
 networks:
   app:
