@@ -19,7 +19,7 @@ async fn main() -> anyhow::Result<()> {
     match app.subcmd {
         SubCommand::Server(s) => {
             info!("Starting server at {}", s.addr);
-            http::server(s).await?;
+            http::App::new().serve(s.addr).await?;
         }
     }
 
