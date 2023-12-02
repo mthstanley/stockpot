@@ -3,11 +3,9 @@ use clap::Parser;
 use dotenvy::dotenv;
 use log::info;
 use stockpot::{
+    adapters::http,
     commands::{RootCommand, SubCommand},
-    http,
 };
-
-mod commands;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
