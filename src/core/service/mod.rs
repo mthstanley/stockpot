@@ -1,2 +1,2 @@
 mod user;
-pub use self::user::UserService;
+pub use self::user::DefaultUserService;
