@@ -88,9 +88,6 @@ mod test {
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
         let body = response.into_body().data().await.unwrap().unwrap();
         let json: Value = serde_json::from_slice(&body.to_vec()).unwrap();
-        assert_eq!(
-            json,
-            json!({"error": "user with id `4` not found", "type": "EntityNotFound"})
-        );
+        assert_eq!(json, json!({"error": "user with id `4` not found"}));
     }
 }
