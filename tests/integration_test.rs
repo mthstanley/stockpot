@@ -5,9 +5,13 @@ use axum::{
 use serde_json::{json, Value};
 use sqlx::PgPool;
 use stockpot::{
-    adapters::{http, repositories},
+    adapters::{
+        http::{self},
+        repositories,
+    },
     core::service,
 };
+use tower::{Service, ServiceExt};
 
 #[sqlx::test]
 async fn test_get_non_existant_route(pool: PgPool) {
@@ -93,4 +97,52 @@ async fn test_get_invalid_user_id(pool: PgPool) {
     let body = result.into_body().data().await.unwrap().unwrap();
     let json: Value = serde_json::from_slice(&body.to_vec()).unwrap();
     assert_eq!(json, json!({"error": "Cannot parse `\"foo\"` to a `i32`"}));
+}
+
+#[sqlx::test]
+async fn test_create_user_success(pool: PgPool) {
+    let mut app = http::App::new(Box::new(service::DefaultUserService::new(Box::new(
+        repositories::PostgresUserRepository::new(pool),
+    ))))
+    .router();
+
+    let result = app
+        .ready()
+        .await
+        .unwrap()
+        .call(
+            Request::builder()
+                .uri("/user")
+                .header("Content-Type", "application/json")
+                .method("POST")
+                .body(Body::from(
+                    serde_json::to_vec(&json!({ "name": "Tom" })).unwrap(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(result.status(), StatusCode::CREATED);
+    let body = result.into_body().data().await.unwrap().unwrap();
+    let json: Value = serde_json::from_slice(&body.to_vec()).unwrap();
+    assert_eq!(json, json!({"id": 1, "name": "Tom"}));
+
+    let result = app
+        .ready()
+        .await
+        .unwrap()
+        .call(
+            Request::builder()
+                .uri("/user/1")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(result.status(), StatusCode::OK);
+    let body = result.into_body().data().await.unwrap().unwrap();
+    let json: Value = serde_json::from_slice(&body.to_vec()).unwrap();
+    assert_eq!(json, json!({"id": 1, "name": "Tom"}));
 }

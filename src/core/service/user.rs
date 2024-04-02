@@ -1,4 +1,7 @@
-use crate::core::{domain, port};
+use crate::core::{
+    domain::{self},
+    port,
+};
 use async_trait::async_trait;
 
 #[cfg(test)]
@@ -20,6 +23,11 @@ impl port::UserService for DefaultUserService {
         let user = self.user_repository.get_user_by_id(id).await?;
         Ok(user)
     }
+
+    async fn create_user(&self, user: domain::User) -> Result<domain::User, domain::user::Error> {
+        let user = self.user_repository.create_user(user).await?;
+        Ok(user)
+    }
 }
 
 #[cfg(test)]
@@ -33,7 +41,7 @@ mod test {
     async fn test_get_user_successfully() {
         let id = 3;
         let user = domain::User {
-            id,
+            id: Some(id),
             name: "test".into(),
         };
         let mut mock = MockUserRepository::new();
@@ -73,6 +81,38 @@ mod test {
         assert_eq!(
             user_service.get_user(id).await.unwrap_err(),
             domain::user::Error::Unexpected
+        );
+    }
+
+    #[tokio::test]
+    async fn test_create_user_successfully() {
+        let id = Some(3);
+        let mut mock = MockUserRepository::new();
+        mock.expect_create_user()
+            .with(eq(domain::User {
+                id: None,
+                name: "foo".to_owned(),
+            }))
+            .once()
+            .returning(move |_| {
+                Ok(domain::User {
+                    id,
+                    name: "foo".to_owned(),
+                })
+            });
+        let user_service = DefaultUserService::new(Box::new(mock));
+        assert_eq!(
+            user_service
+                .create_user(domain::User {
+                    id: None,
+                    name: "foo".to_owned()
+                })
+                .await
+                .unwrap(),
+            domain::User {
+                id,
+                name: "foo".to_owned()
+            }
         );
     }
 }

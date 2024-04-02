@@ -30,4 +30,17 @@ impl port::UserRepository for PostgresUserRepository {
                 }
             })
     }
+
+    async fn create_user(&self, user: domain::User) -> Result<domain::User, domain::user::Error> {
+        sqlx::query_as("insert into app_user (name) values ($1) returning *")
+            .bind(&user.name)
+            .fetch_one(&self.db_pool)
+            .await
+            .map_err(|e| match e {
+                _ => {
+                    error!("Unable to insert user `{}` due to error: {}", user, e);
+                    domain::user::Error::Unexpected.into()
+                }
+            })
+    }
 }

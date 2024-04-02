@@ -31,6 +31,10 @@ impl App {
         self.router.with_state(Arc::new(self.state)).oneshot(req)
     }
 
+    pub fn router(self) -> Router {
+        self.router.with_state(Arc::new(self.state))
+    }
+
     pub async fn serve(self, addr: SocketAddr) -> anyhow::Result<()> {
         axum::Server::bind(&addr)
             .serve(
