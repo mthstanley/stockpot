@@ -1,5 +1,5 @@
 use axum::{
-    body::{Body, HttpBody},
+    body::{self, Body},
     http::{Request, StatusCode},
 };
 use serde_json::{json, Value};
@@ -30,7 +30,13 @@ async fn test_get_non_existant_route(pool: PgPool) {
         .unwrap();
 
     assert_eq!(result.status(), StatusCode::NOT_FOUND);
-    assert!(result.into_body().data().await.is_none());
+    assert_eq!(
+        body::to_bytes(result.into_body(), usize::MAX)
+            .await
+            .unwrap()
+            .len(),
+        0
+    );
 }
 
 #[sqlx::test]
@@ -50,8 +56,10 @@ async fn test_get_non_existant_user(pool: PgPool) {
         .unwrap();
 
     assert_eq!(result.status(), StatusCode::NOT_FOUND);
-    let body = result.into_body().data().await.unwrap().unwrap();
-    let json: Value = serde_json::from_slice(&body.to_vec()).unwrap();
+    let body = body::to_bytes(result.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let json: Value = serde_json::from_slice(&body).unwrap();
     assert_eq!(json, json!({"error": "user with id `1` not found"}));
 }
 
@@ -72,8 +80,10 @@ async fn test_get_existing_user(pool: PgPool) {
         .unwrap();
 
     assert_eq!(result.status(), StatusCode::OK);
-    let body = result.into_body().data().await.unwrap().unwrap();
-    let json: Value = serde_json::from_slice(&body.to_vec()).unwrap();
+    let body = body::to_bytes(result.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let json: Value = serde_json::from_slice(&body).unwrap();
     assert_eq!(json, json!({"id": 1, "name": "Matt"}));
 }
 
@@ -94,8 +104,10 @@ async fn test_get_invalid_user_id(pool: PgPool) {
         .unwrap();
 
     assert_eq!(result.status(), StatusCode::BAD_REQUEST);
-    let body = result.into_body().data().await.unwrap().unwrap();
-    let json: Value = serde_json::from_slice(&body.to_vec()).unwrap();
+    let body = body::to_bytes(result.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let json: Value = serde_json::from_slice(&body).unwrap();
     assert_eq!(json, json!({"error": "Cannot parse `\"foo\"` to a `i32`"}));
 }
 
@@ -107,6 +119,7 @@ async fn test_create_user_success(pool: PgPool) {
     .router();
 
     let result = app
+        .as_service()
         .ready()
         .await
         .unwrap()
@@ -124,11 +137,14 @@ async fn test_create_user_success(pool: PgPool) {
         .unwrap();
 
     assert_eq!(result.status(), StatusCode::CREATED);
-    let body = result.into_body().data().await.unwrap().unwrap();
-    let json: Value = serde_json::from_slice(&body.to_vec()).unwrap();
+    let body = body::to_bytes(result.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let json: Value = serde_json::from_slice(&body).unwrap();
     assert_eq!(json, json!({"id": 1, "name": "Tom"}));
 
     let result = app
+        .as_service()
         .ready()
         .await
         .unwrap()
@@ -142,7 +158,9 @@ async fn test_create_user_success(pool: PgPool) {
         .unwrap();
 
     assert_eq!(result.status(), StatusCode::OK);
-    let body = result.into_body().data().await.unwrap().unwrap();
-    let json: Value = serde_json::from_slice(&body.to_vec()).unwrap();
+    let body = body::to_bytes(result.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let json: Value = serde_json::from_slice(&body).unwrap();
     assert_eq!(json, json!({"id": 1, "name": "Tom"}));
 }

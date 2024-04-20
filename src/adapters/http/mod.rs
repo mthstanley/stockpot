@@ -36,12 +36,10 @@ impl App {
     }
 
     pub async fn serve(self, addr: SocketAddr) -> anyhow::Result<()> {
-        axum::Server::bind(&addr)
-            .serve(
-                self.router
-                    .with_state(Arc::new(self.state))
-                    .into_make_service(),
-            )
+        let listener = tokio::net::TcpListener::bind(addr)
+            .await
+            .context("error creating tcp listener")?;
+        axum::serve(listener, self.router.with_state(Arc::new(self.state)))
             .await
             .context("error running HTTP server")
     }
