@@ -1,7 +1,18 @@
-use axum::{async_trait, extract::FromRequestParts, http::request::Parts};
+use std::sync::Arc;
+
+use axum::{
+    async_trait,
+    extract::{FromRef, FromRequestParts},
+    http::{request::Parts, HeaderMap},
+};
+use headers::{self, authorization::Basic, HeaderMapExt};
+use secrecy::Secret;
 use serde::de::DeserializeOwned;
 
-use super::error::AppError;
+use crate::core::domain;
+
+use super::{error::AppError, AppState};
+use log::error;
 
 pub struct Path<T>(pub T);
 
@@ -18,5 +29,41 @@ where
             Ok(value) => Ok(Self(value.0)),
             Err(rejection) => Err(AppError::PathParseError(rejection)),
         }
+    }
+}
+
+pub struct ExtractAuthUser(pub domain::AuthUser);
+
+#[async_trait]
+impl<S> FromRequestParts<S> for ExtractAuthUser
+where
+    Arc<AppState>: FromRef<S>,
+    S: Send + Sync,
+{
+    type Rejection = AppError;
+
+    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+        let header_map = HeaderMap::from_request_parts(parts, state)
+            .await
+            .map_err(|e| {
+                error!("Failed to authenticate user due to error: {}", e);
+                domain::auth::Error::InvalidAuth
+            })?;
+
+        let basic_auth: headers::Authorization<Basic> = match header_map.typed_get() {
+            Some(header_value) => Ok(header_value),
+            None => Err(domain::auth::Error::InvalidAuth),
+        }?;
+
+        let app_state = Arc::<AppState>::from_ref(state);
+        Ok(ExtractAuthUser(
+            app_state
+                .auth_user_service
+                .validate(domain::UserCredentials {
+                    username: basic_auth.username().into(),
+                    password: Secret::from(String::from(basic_auth.password())),
+                })
+                .await?,
+        ))
     }
 }

@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use anyhow::Ok;
 use clap::Parser;
 use dotenvy::dotenv;
@@ -35,10 +37,16 @@ async fn main() -> anyhow::Result<()> {
             let pool = sqlx::postgres::PgPoolOptions::new()
                 .connect_with(connect_options)
                 .await?;
-            let user_service = Box::new(service::DefaultUserService::new(Box::new(
-                repositories::PostgresUserRepository::new(pool),
+            let user_service = Arc::new(service::DefaultUserService::new(Box::new(
+                repositories::PostgresUserRepository::new(pool.clone()),
             )));
-            http::App::new(user_service).serve(s.addr).await?;
+            let auth_user_service = Arc::new(service::DefaultAuthUserService::new(
+                Box::new(repositories::PostgresAuthUserRepository::new(pool.clone())),
+                user_service.clone(),
+            ));
+            http::App::new(user_service.clone(), auth_user_service)
+                .serve(s.addr)
+                .await?;
         }
     }
 

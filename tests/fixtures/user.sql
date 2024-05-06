@@ -1,2 +1,2 @@
-INSERT INTO app_user (name) 
+INSERT INTO app_user (name)
     VALUES ('Matt');

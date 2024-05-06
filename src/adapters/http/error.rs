@@ -26,6 +26,9 @@ impl From<&AppError> for ErrorResponse {
             AppError::PathParseError(ref rejection) => Self {
                 error: rejection.to_string(),
             },
+            AppError::Unauthorized(ref error) => Self {
+                error: error.clone(),
+            },
         }
     }
 }
@@ -34,6 +37,8 @@ impl From<&AppError> for ErrorResponse {
 pub enum AppError {
     #[error("{0}")]
     EntityNotFound(String),
+    #[error("{0}")]
+    Unauthorized(String),
     #[error("{0}")]
     PathParseError(PathRejection),
     #[error("{0}")]
@@ -45,6 +50,18 @@ impl From<domain::user::Error> for AppError {
         match value {
             domain::user::Error::UserNotFound(_) => Self::EntityNotFound(value.to_string()),
             domain::user::Error::Unexpected => Self::Unexpected(value.to_string()),
+        }
+    }
+}
+
+impl From<domain::auth::Error> for AppError {
+    fn from(value: domain::auth::Error) -> Self {
+        match value {
+            domain::auth::Error::AuthUserNotFound(_) | domain::auth::Error::UserNotFound(_) => {
+                Self::EntityNotFound(value.to_string())
+            }
+            domain::auth::Error::Unexpected => Self::Unexpected(value.to_string()),
+            domain::auth::Error::InvalidAuth => Self::Unauthorized(value.to_string()),
         }
     }
 }
@@ -67,6 +84,7 @@ impl IntoResponse for AppError {
 
                 _ => StatusCode::INTERNAL_SERVER_ERROR,
             },
+            Self::Unauthorized(_) => StatusCode::UNAUTHORIZED,
         };
         (status, body).into_response()
     }
@@ -75,18 +93,19 @@ impl IntoResponse for AppError {
 #[cfg(test)]
 mod test {
 
+    use axum::body;
     use serde_json::{json, Value};
 
     use super::*;
 
     #[tokio::test]
     async fn test_into_response_for_app_error() {
-        use axum::body::HttpBody;
-
         let app_err: AppError = domain::user::Error::UserNotFound(4).into();
         let response = app_err.into_response();
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
-        let body = response.into_body().data().await.unwrap().unwrap();
+        let body = body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .unwrap();
         let json: Value = serde_json::from_slice(&body.to_vec()).unwrap();
         assert_eq!(json, json!({"error": "user with id `4` not found"}));
     }

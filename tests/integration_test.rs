@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use axum::{
     body::{self, Body},
     http::{Request, StatusCode},
@@ -5,19 +7,21 @@ use axum::{
 use serde_json::{json, Value};
 use sqlx::PgPool;
 use stockpot::{
-    adapters::{
-        http::{self},
-        repositories,
-    },
+    adapters::{http, repositories},
     core::service,
 };
 use tower::{Service, ServiceExt};
 
 #[sqlx::test]
 async fn test_get_non_existant_route(pool: PgPool) {
-    let app = http::App::new(Box::new(service::DefaultUserService::new(Box::new(
-        repositories::PostgresUserRepository::new(pool),
-    ))));
+    let user_service = Arc::new(service::DefaultUserService::new(Box::new(
+        repositories::PostgresUserRepository::new(pool.clone()),
+    )));
+    let auth_service = Arc::new(service::DefaultAuthUserService::new(
+        Box::new(repositories::PostgresAuthUserRepository::new(pool.clone())),
+        user_service.clone(),
+    ));
+    let app = http::App::new(user_service, auth_service);
 
     let result = app
         .oneshot(
@@ -41,9 +45,14 @@ async fn test_get_non_existant_route(pool: PgPool) {
 
 #[sqlx::test]
 async fn test_get_non_existant_user(pool: PgPool) {
-    let app = http::App::new(Box::new(service::DefaultUserService::new(Box::new(
-        repositories::PostgresUserRepository::new(pool),
-    ))));
+    let user_service = Arc::new(service::DefaultUserService::new(Box::new(
+        repositories::PostgresUserRepository::new(pool.clone()),
+    )));
+    let auth_service = Arc::new(service::DefaultAuthUserService::new(
+        Box::new(repositories::PostgresAuthUserRepository::new(pool.clone())),
+        user_service.clone(),
+    ));
+    let app = http::App::new(user_service, auth_service);
 
     let result = app
         .oneshot(
@@ -65,9 +74,14 @@ async fn test_get_non_existant_user(pool: PgPool) {
 
 #[sqlx::test(fixtures("user"))]
 async fn test_get_existing_user(pool: PgPool) {
-    let app = http::App::new(Box::new(service::DefaultUserService::new(Box::new(
-        repositories::PostgresUserRepository::new(pool),
-    ))));
+    let user_service = Arc::new(service::DefaultUserService::new(Box::new(
+        repositories::PostgresUserRepository::new(pool.clone()),
+    )));
+    let auth_service = Arc::new(service::DefaultAuthUserService::new(
+        Box::new(repositories::PostgresAuthUserRepository::new(pool.clone())),
+        user_service.clone(),
+    ));
+    let app = http::App::new(user_service, auth_service);
 
     let result = app
         .oneshot(
@@ -89,9 +103,14 @@ async fn test_get_existing_user(pool: PgPool) {
 
 #[sqlx::test(fixtures("user"))]
 async fn test_get_invalid_user_id(pool: PgPool) {
-    let app = http::App::new(Box::new(service::DefaultUserService::new(Box::new(
-        repositories::PostgresUserRepository::new(pool),
-    ))));
+    let user_service = Arc::new(service::DefaultUserService::new(Box::new(
+        repositories::PostgresUserRepository::new(pool.clone()),
+    )));
+    let auth_service = Arc::new(service::DefaultAuthUserService::new(
+        Box::new(repositories::PostgresAuthUserRepository::new(pool.clone())),
+        user_service.clone(),
+    ));
+    let app = http::App::new(user_service, auth_service);
 
     let result = app
         .oneshot(
@@ -113,10 +132,14 @@ async fn test_get_invalid_user_id(pool: PgPool) {
 
 #[sqlx::test]
 async fn test_create_user_success(pool: PgPool) {
-    let mut app = http::App::new(Box::new(service::DefaultUserService::new(Box::new(
-        repositories::PostgresUserRepository::new(pool),
-    ))))
-    .router();
+    let user_service = Arc::new(service::DefaultUserService::new(Box::new(
+        repositories::PostgresUserRepository::new(pool.clone()),
+    )));
+    let auth_service = Arc::new(service::DefaultAuthUserService::new(
+        Box::new(repositories::PostgresAuthUserRepository::new(pool.clone())),
+        user_service.clone(),
+    ));
+    let mut app = http::App::new(user_service, auth_service).router();
 
     let result = app
         .as_service()
@@ -129,7 +152,10 @@ async fn test_create_user_success(pool: PgPool) {
                 .header("Content-Type", "application/json")
                 .method("POST")
                 .body(Body::from(
-                    serde_json::to_vec(&json!({ "name": "Tom" })).unwrap(),
+                    serde_json::to_vec(
+                        &json!({ "name": "Tom", "username": "tom333", "password": "secret" }),
+                    )
+                    .unwrap(),
                 ))
                 .unwrap(),
         )

@@ -8,7 +8,7 @@ use anyhow::Context;
 use axum::{body::Body, http::Request, Router};
 use tower::{util::Oneshot, ServiceExt};
 
-use crate::core::port;
+use crate::core::{domain, port};
 
 pub struct App {
     state: AppState,
@@ -16,13 +16,26 @@ pub struct App {
 }
 
 pub struct AppState {
-    user_service: Box<dyn port::UserService + Send + Sync>,
+    user_service: Arc<dyn port::UserService + Send + Sync>,
+    auth_user_service: Arc<
+        dyn port::AuthUserService<domain::UserCredentials, domain::UserCredentials> + Send + Sync,
+    >,
 }
 
 impl App {
-    pub fn new(user_service: Box<dyn port::UserService + Send + Sync>) -> App {
+    pub fn new(
+        user_service: Arc<dyn port::UserService + Send + Sync>,
+        auth_user_service: Arc<
+            dyn port::AuthUserService<domain::UserCredentials, domain::UserCredentials>
+                + Send
+                + Sync,
+        >,
+    ) -> App {
         Self {
-            state: AppState { user_service },
+            state: AppState {
+                user_service,
+                auth_user_service,
+            },
             router: user::build_routes(),
         }
     }
