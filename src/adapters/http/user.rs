@@ -86,9 +86,17 @@ pub async fn create_user(
     Ok((StatusCode::CREATED, Json(user.into())))
 }
 
+// TODO: remove
+#[derive(Serialize)]
+pub struct GetAuthUser {
+    pub message: String,
+}
+
 pub async fn get_auth_user(
     State(_): State<Arc<AppState>>,
     ExtractAuthUser(auth_user): ExtractAuthUser,
-) -> anyhow::Result<Json<domain::AuthUser>, AppError> {
-    Ok(Json(auth_user))
+) -> anyhow::Result<Json<GetAuthUser>, AppError> {
+    Ok(Json(GetAuthUser {
+        message: format!("Successful authentication for {}", auth_user.user.name),
+    }))
 }

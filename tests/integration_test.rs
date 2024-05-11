@@ -4,6 +4,7 @@ use axum::{
     body::{self, Body},
     http::{Request, StatusCode},
 };
+use headers::HeaderMapExt;
 use serde_json::{json, Value};
 use sqlx::PgPool;
 use stockpot::{
@@ -189,4 +190,65 @@ async fn test_create_user_success(pool: PgPool) {
         .unwrap();
     let json: Value = serde_json::from_slice(&body).unwrap();
     assert_eq!(json, json!({"id": 1, "name": "Tom"}));
+}
+
+#[sqlx::test(fixtures("user"))]
+async fn test_error_missing_credentials(pool: PgPool) {
+    let user_service = Arc::new(service::DefaultUserService::new(Box::new(
+        repositories::PostgresUserRepository::new(pool.clone()),
+    )));
+    let auth_service = Arc::new(service::DefaultAuthUserService::new(
+        Box::new(repositories::PostgresAuthUserRepository::new(pool.clone())),
+        user_service.clone(),
+    ));
+    let app = http::App::new(user_service, auth_service);
+
+    let result = app
+        .oneshot(
+            Request::builder()
+                .uri("/user/auth")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(result.status(), StatusCode::UNAUTHORIZED);
+    let body = body::to_bytes(result.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let json: Value = serde_json::from_slice(&body).unwrap();
+    assert_eq!(json, json!({"error": "Invalid credentials"}));
+}
+
+#[sqlx::test(fixtures("user"))]
+async fn test_successful_authentication(pool: PgPool) {
+    let user_service = Arc::new(service::DefaultUserService::new(Box::new(
+        repositories::PostgresUserRepository::new(pool.clone()),
+    )));
+    let auth_service = Arc::new(service::DefaultAuthUserService::new(
+        Box::new(repositories::PostgresAuthUserRepository::new(pool.clone())),
+        user_service.clone(),
+    ));
+    let app = http::App::new(user_service, auth_service);
+
+    let mut request = Request::builder().uri("/user/auth");
+    request
+        .headers_mut()
+        .map(|h| h.typed_insert(headers::Authorization::basic("matt42", "secret")));
+
+    let result = app
+        .oneshot(request.body(Body::empty()).unwrap())
+        .await
+        .unwrap();
+
+    assert_eq!(result.status(), StatusCode::OK);
+    let body = body::to_bytes(result.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let json: Value = serde_json::from_slice(&body).unwrap();
+    assert_eq!(
+        json,
+        json!({"message": "Successful authentication for Matt"})
+    );
 }
