@@ -1,2 +1,3 @@
+pub mod adapters;
 pub mod commands;
-pub mod http;
+pub mod core;

@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      PGDATA: /data/postgres
+      POSTGRES_DB: stockpot
+    volumes:
+      - postgres:/data/postgres
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  # use sqlx cli:
+  # docker-compose run -it --entrypoint sh migrate
+  migrate:
+    build:
+      context: .
+      dockerfile: docker/sqlxcli.dockerfile
+    volumes:
+      - "./migrations:/app/migrations"
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres/stockpot
+    entrypoint: sh -c "./sqlx database create; ./sqlx migrate run"
+    depends_on:
+      - postgres
+
+  unit-test:
+    build:
+      context: .
+      dockerfile: docker/unit-test.dockerfile
+    volumes:
+      - ".:/app"
+
+  integration-test:
+    build:
+      context: .
+      dockerfile: docker/integration-test.dockerfile
+    env_file:
+      - .env.integration-test
+    volumes:
+      - ".:/app"
+    depends_on:
+      - postgres
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/app.dockerfile
+    env_file:
+      - .env.local
+    ports:
+      - "8080:8080"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+networks:
+  app:
+    driver: bridge
+
+volumes:
+  postgres:
