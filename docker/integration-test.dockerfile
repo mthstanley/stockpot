@@ -10,4 +10,4 @@ COPY src /app/src
 RUN touch src/main.rs
 ## End: Cache Dependencies ##
 
-CMD ["cargo", "test", "--test", "*"]
+CMD ["cargo", "test", "--test", "*", "--", "--nocapture"]

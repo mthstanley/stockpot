@@ -12,7 +12,8 @@ pub enum Error {
     Unexpected,
 }
 
-#[derive(Serialize, Clone, Debug, FromRow, PartialEq)]
+#[derive(Serialize, Clone, Debug, FromRow, PartialEq, sqlx::Type)]
+#[sqlx(type_name = "t_app_user")]
 pub struct User {
     pub id: Option<i32>,
     pub name: String,

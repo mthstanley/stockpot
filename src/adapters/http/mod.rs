@@ -1,5 +1,6 @@
 pub mod error;
 pub mod extract;
+pub mod recipe;
 pub mod user;
 
 use std::{net::SocketAddr, sync::Arc};
@@ -20,6 +21,7 @@ pub struct AppState {
     auth_user_service: Arc<
         dyn port::AuthUserService<domain::UserCredentials, domain::UserCredentials> + Send + Sync,
     >,
+    recipe_service: Box<dyn port::RecipeService + Send + Sync>,
 }
 
 impl App {
@@ -30,13 +32,17 @@ impl App {
                 + Send
                 + Sync,
         >,
+        recipe_service: Box<dyn port::RecipeService + Send + Sync>,
     ) -> App {
         Self {
             state: AppState {
                 user_service,
                 auth_user_service,
+                recipe_service,
             },
-            router: user::build_routes(),
+            router: Router::new()
+                .merge(user::build_routes())
+                .merge(recipe::build_routes()),
         }
     }
 
