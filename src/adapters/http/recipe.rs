@@ -1,5 +1,5 @@
 use serde_with::{self};
-use std::sync::Arc;
+use std::{fmt::Display, sync::Arc};
 
 use axum::{
     extract::{Path, State},
@@ -13,43 +13,25 @@ use crate::{adapters, core::domain};
 
 use super::{error::AppError, extract::ExtractAuthUser, AppState};
 
-#[derive(Serialize)]
-pub struct GetUnit {
-    pub id: i32,
-    pub name: String,
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Units {
+    Grams,
 }
 
-impl From<domain::recipe::Unit> for GetUnit {
-    fn from(value: domain::recipe::Unit) -> Self {
-        Self {
-            id: value.id.unwrap_or(-1),
-            name: value.name,
-        }
-    }
-}
-
-#[derive(Serialize)]
-pub struct GetIngredient {
-    pub id: i32,
-    pub name: String,
-}
-
-impl From<domain::recipe::Ingredient> for GetIngredient {
-    fn from(value: domain::recipe::Ingredient) -> Self {
-        Self {
-            id: value.id.unwrap_or(-1),
-            name: value.name,
-        }
+impl Display for Units {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = format!("{:?}", self).to_lowercase();
+        write!(f, "{}", s)
     }
 }
 
 #[derive(Serialize)]
 pub struct GetRecipeIngredient {
     pub id: i32,
-    pub recipe_id: i32,
-    pub ingredient: GetIngredient,
+    pub ingredient: String,
     pub quantity: i32,
-    pub units: GetUnit,
+    pub units: String,
     pub preparation: String,
 }
 
@@ -57,10 +39,9 @@ impl From<domain::recipe::RecipeIngredient> for GetRecipeIngredient {
     fn from(value: domain::recipe::RecipeIngredient) -> Self {
         Self {
             id: value.id.unwrap_or(-1),
-            recipe_id: value.recipe_id.unwrap_or(-1),
-            ingredient: value.ingredient.into(),
+            ingredient: value.ingredient.name,
             quantity: value.quantity,
-            units: value.units.into(),
+            units: value.units.name,
             preparation: value.preparation,
         }
     }
@@ -69,7 +50,6 @@ impl From<domain::recipe::RecipeIngredient> for GetRecipeIngredient {
 #[derive(Serialize)]
 pub struct GetStep {
     pub id: i32,
-    pub recipe_id: i32,
     pub ordinal: i32,
     pub instruction: String,
 }
@@ -78,7 +58,6 @@ impl From<domain::recipe::Step> for GetStep {
     fn from(value: domain::recipe::Step) -> Self {
         Self {
             id: value.id.unwrap_or(-1),
-            recipe_id: value.recipe_id.unwrap_or(-1),
             ordinal: value.ordinal,
             instruction: value.instruction,
         }
@@ -99,7 +78,7 @@ pub struct GetRecipe {
     #[serde_as(as = "Option<serde_with::DurationSeconds<i64>>")]
     pub inactive_time: Option<chrono::Duration>,
     pub yield_quantity: i32,
-    pub yield_units: GetUnit,
+    pub yield_units: String,
     pub ingredients: Vec<GetRecipeIngredient>,
     pub steps: Vec<GetStep>,
 }
@@ -115,7 +94,7 @@ impl From<domain::Recipe> for GetRecipe {
             cook_time: value.cook_time,
             inactive_time: value.inactive_time,
             yield_quantity: value.yield_quantity,
-            yield_units: value.yield_units.into(),
+            yield_units: value.yield_units.name,
             ingredients: value.ingredients.into_iter().map(|x| x.into()).collect(),
             steps: value.steps.into_iter().map(|x| x.into()).collect(),
         }
@@ -123,38 +102,10 @@ impl From<domain::Recipe> for GetRecipe {
 }
 
 #[derive(Deserialize)]
-pub struct CreateUnit {
-    pub name: String,
-}
-
-impl From<CreateUnit> for domain::recipe::Unit {
-    fn from(value: CreateUnit) -> Self {
-        Self {
-            id: None,
-            name: value.name,
-        }
-    }
-}
-
-#[derive(Deserialize)]
-pub struct CreateIngredient {
-    pub name: String,
-}
-
-impl From<CreateIngredient> for domain::recipe::Ingredient {
-    fn from(value: CreateIngredient) -> Self {
-        Self {
-            id: None,
-            name: value.name,
-        }
-    }
-}
-
-#[derive(Deserialize)]
 pub struct CreateRecipeIngredient {
-    pub ingredient: CreateIngredient,
+    pub ingredient: String,
     pub quantity: i32,
-    pub units: CreateUnit,
+    pub units: Units,
     pub preparation: String,
 }
 
@@ -163,9 +114,15 @@ impl From<CreateRecipeIngredient> for domain::recipe::RecipeIngredient {
         Self {
             id: None,
             recipe_id: None,
-            ingredient: value.ingredient.into(),
+            ingredient: domain::recipe::Ingredient {
+                id: None,
+                name: value.ingredient,
+            },
             quantity: value.quantity,
-            units: value.units.into(),
+            units: domain::recipe::Unit {
+                id: None,
+                name: value.units.to_string(),
+            },
             preparation: value.preparation,
         }
     }
@@ -200,7 +157,7 @@ pub struct CreateRecipe {
     #[serde_as(as = "Option<serde_with::DurationSeconds<i64>>")]
     pub inactive_time: Option<chrono::Duration>,
     pub yield_quantity: i32,
-    pub yield_units: CreateUnit,
+    pub yield_units: Units,
     pub ingredients: Vec<CreateRecipeIngredient>,
     pub steps: Vec<CreateStep>,
 }
@@ -216,7 +173,10 @@ impl domain::Recipe {
             cook_time: value.cook_time,
             inactive_time: value.inactive_time,
             yield_quantity: value.yield_quantity,
-            yield_units: value.yield_units.into(),
+            yield_units: domain::recipe::Unit {
+                id: None,
+                name: value.yield_units.to_string(),
+            },
             ingredients: value.ingredients.into_iter().map(|x| x.into()).collect(),
             steps: value.steps.into_iter().map(|x| x.into()).collect(),
         }
@@ -224,53 +184,28 @@ impl domain::Recipe {
 }
 
 #[derive(Deserialize)]
-pub struct UpdateUnit {
-    pub id: i32,
-    pub name: String,
-}
-
-impl From<UpdateUnit> for domain::recipe::Unit {
-    fn from(value: UpdateUnit) -> Self {
-        Self {
-            id: Some(value.id),
-            name: value.name,
-        }
-    }
-}
-
-#[derive(Deserialize)]
-pub struct UpdateIngredient {
-    pub id: i32,
-    pub name: String,
-}
-
-impl From<UpdateIngredient> for domain::recipe::Ingredient {
-    fn from(value: UpdateIngredient) -> Self {
-        Self {
-            id: Some(value.id),
-            name: value.name,
-        }
-    }
-}
-
-#[derive(Deserialize)]
 pub struct UpdateRecipeIngredient {
-    pub id: i32,
-    pub recipe_id: i32,
-    pub ingredient: UpdateIngredient,
+    pub id: Option<i32>,
+    pub ingredient: String,
     pub quantity: i32,
-    pub units: UpdateUnit,
+    pub units: Units,
     pub preparation: String,
 }
 
 impl From<UpdateRecipeIngredient> for domain::recipe::RecipeIngredient {
     fn from(value: UpdateRecipeIngredient) -> Self {
         Self {
-            id: Some(value.id),
-            recipe_id: Some(value.recipe_id),
-            ingredient: value.ingredient.into(),
+            id: value.id,
+            recipe_id: None,
+            ingredient: domain::recipe::Ingredient {
+                id: None,
+                name: value.ingredient,
+            },
             quantity: value.quantity,
-            units: value.units.into(),
+            units: domain::recipe::Unit {
+                id: None,
+                name: value.units.to_string(),
+            },
             preparation: value.preparation,
         }
     }
@@ -278,8 +213,7 @@ impl From<UpdateRecipeIngredient> for domain::recipe::RecipeIngredient {
 
 #[derive(Deserialize)]
 pub struct UpdateStep {
-    pub id: i32,
-    pub recipe_id: i32,
+    pub id: Option<i32>,
     pub ordinal: i32,
     pub instruction: String,
 }
@@ -287,8 +221,8 @@ pub struct UpdateStep {
 impl From<UpdateStep> for domain::recipe::Step {
     fn from(value: UpdateStep) -> Self {
         Self {
-            id: Some(value.id),
-            recipe_id: Some(value.recipe_id),
+            id: value.id,
+            recipe_id: None,
             ordinal: value.ordinal,
             instruction: value.instruction,
         }
@@ -308,13 +242,14 @@ pub struct UpdateRecipe {
     #[serde_as(as = "Option<serde_with::DurationSeconds<i64>>")]
     pub inactive_time: Option<chrono::Duration>,
     pub yield_quantity: i32,
-    pub yield_units: UpdateUnit,
+    pub yield_units: Units,
     pub ingredients: Vec<UpdateRecipeIngredient>,
     pub steps: Vec<UpdateStep>,
 }
 
 impl domain::Recipe {
     fn from_update(value: UpdateRecipe, author: domain::User) -> Self {
+        let id = value.id;
         Self {
             id: Some(value.id),
             title: value.title,
@@ -324,9 +259,28 @@ impl domain::Recipe {
             cook_time: value.cook_time,
             inactive_time: value.inactive_time,
             yield_quantity: value.yield_quantity,
-            yield_units: value.yield_units.into(),
-            ingredients: value.ingredients.into_iter().map(|x| x.into()).collect(),
-            steps: value.steps.into_iter().map(|x| x.into()).collect(),
+            yield_units: domain::recipe::Unit {
+                id: None,
+                name: value.yield_units.to_string(),
+            },
+            ingredients: value
+                .ingredients
+                .into_iter()
+                .map(|x| {
+                    let mut i: domain::recipe::RecipeIngredient = x.into();
+                    i.recipe_id = Some(id);
+                    i
+                })
+                .collect(),
+            steps: value
+                .steps
+                .into_iter()
+                .map(|x| {
+                    let mut i: domain::recipe::Step = x.into();
+                    i.recipe_id = Some(id);
+                    i
+                })
+                .collect(),
         }
     }
 }
