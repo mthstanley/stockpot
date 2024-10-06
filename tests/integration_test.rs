@@ -239,28 +239,18 @@ async fn test_create_recipe(pool: PgPool) {
                 "cook_time": 400,
                 "inactive_time": 8600,
                 "yield_quantity": 200,
-                "yield_units": {
-                    "name": "grams"
-                },
+                "yield_units": "grams",
                 "ingredients": [
                     {
-                        "ingredient": {
-                            "name": "carrots"
-                        },
+                        "ingredient": "carrots",
                         "quantity": 200,
-                        "units": {
-                            "name": "grams"
-                        },
+                        "units": "grams",
                         "preparation": "diced"
                     },
                     {
-                        "ingredient": {
-                            "name": "butter"
-                        },
+                        "ingredient": "butter",
                         "quantity": 200,
-                        "units": {
-                            "name": "grams"
-                        },
+                        "units": "grams",
                         "preparation": "melted"
                     }
                 ],
@@ -301,44 +291,26 @@ async fn test_create_recipe(pool: PgPool) {
         "cook_time": 400,
         "inactive_time": 8600,
         "yield_quantity": 200,
-        "yield_units": {
-            "id": 1,
-            "name": "grams"
-        },
+        "yield_units": "grams",
         "ingredients": [
             {
                 "id": 1,
-                "recipe_id": 1,
-                "ingredient": {
-                    "id": 1,
-                    "name": "carrots"
-                },
+                "ingredient": "carrots",
                 "quantity": 200,
-                "units": {
-                    "id": 1,
-                    "name": "grams"
-                },
+                "units": "grams",
                 "preparation": "diced"
             },
             {
                 "id": 2,
-                "recipe_id": 1,
-                "ingredient": {
-                    "id": 2,
-                    "name": "butter"
-                },
+                "ingredient": "butter",
                 "quantity": 200,
-                "units": {
-                    "id": 1,
-                    "name": "grams"
-                },
+                "units": "grams",
                 "preparation": "melted"
             }
         ],
         "steps": [
             {
                 "id": 1,
-                "recipe_id": 1,
                 "ordinal": 1,
                 "instruction": "Saute the carrots in the butter"
             }
