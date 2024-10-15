@@ -324,8 +324,12 @@ impl port::RecipeRepository for PostgresRecipeRepository {
             "#,
         );
         query_builder.push_values(&recipe.steps, |mut b, step| {
-            b.push_bind(step.id)
-                .push("(SELECT id FROM i_recipe)")
+            if let Some(id) = step.id {
+                b.push_bind(id);
+            } else {
+                b.push("DEFAULT");
+            }
+            b.push("(SELECT id FROM i_recipe)")
                 .push_bind(step.ordinal)
                 .push_bind(&step.instruction);
         });
@@ -351,9 +355,13 @@ impl port::RecipeRepository for PostgresRecipeRepository {
         );
         let mut sep = query_builder.separated(", ");
         for recipe_ingredient in &recipe.ingredients {
-            sep.push("(")
-                .push_bind_unseparated(recipe_ingredient.id)
-                .push("(SELECT id FROM i_recipe)")
+            sep.push("(");
+            if let Some(id) = recipe_ingredient.id {
+                sep.push_bind_unseparated(id);
+            } else {
+                sep.push_unseparated("DEFAULT");
+            }
+            sep.push("(SELECT id FROM i_recipe)")
                 .push("(SELECT id FROM i_ingredient WHERE name = ")
                 .push_bind_unseparated(&recipe_ingredient.ingredient.name)
                 .push_unseparated(")")

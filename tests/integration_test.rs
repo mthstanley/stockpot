@@ -2,13 +2,16 @@ use std::sync::Arc;
 
 use axum::{
     body::{self, Body},
-    http::{Request, StatusCode},
+    http::{request::Builder, Request, StatusCode},
 };
 use headers::HeaderMapExt;
 use serde_json::{json, Value};
 use sqlx::PgPool;
 use stockpot::{
-    adapters::{http, repositories},
+    adapters::{
+        http::{self, recipe::GetRecipe},
+        repositories,
+    },
     core::service,
 };
 use tower::{Service, ServiceExt};
@@ -277,9 +280,9 @@ async fn test_create_recipe(pool: PgPool) {
     let body = body::to_bytes(result.into_body(), usize::MAX)
         .await
         .unwrap();
-    let json: Value = serde_json::from_slice(&body).unwrap();
+    let actual_recipe: GetRecipe = serde_json::from_slice(&body).unwrap();
 
-    let created_recipe = json!({
+    let expected_recipe: GetRecipe = serde_json::from_value(json!({
         "id": 1,
         "author": {
             "id": 1,
@@ -315,8 +318,9 @@ async fn test_create_recipe(pool: PgPool) {
                 "instruction": "Saute the carrots in the butter"
             }
         ]
-    });
-    assert_eq!(json, created_recipe);
+    }))
+    .unwrap();
+    assert_eq!(actual_recipe, expected_recipe);
 
     let result = app
         .as_service()
@@ -336,6 +340,171 @@ async fn test_create_recipe(pool: PgPool) {
     let body = body::to_bytes(result.into_body(), usize::MAX)
         .await
         .unwrap();
-    let json: Value = serde_json::from_slice(&body).unwrap();
-    assert_eq!(json, created_recipe);
+    let json: GetRecipe = serde_json::from_slice(&body).unwrap();
+    assert_eq!(json, expected_recipe);
+}
+
+fn get_authed_request_builder(uri: &str, method: &str) -> Builder {
+    let mut request_builder = Request::builder()
+        .uri(uri)
+        .header("Content-Type", "application/json")
+        .method(method);
+    request_builder
+        .headers_mut()
+        .map(|h| h.typed_insert(headers::Authorization::basic("matt42", "secret")));
+    request_builder
+}
+
+#[sqlx::test(fixtures("user"))]
+async fn test_update_recipe_add_new_ingredient(pool: PgPool) {
+    let mut app = create_app(pool).router();
+
+    let request = get_authed_request_builder("/recipe", "POST")
+        .body(Body::from(
+            serde_json::to_vec(&json!({
+                "title": "Buttered Carrots",
+                "description": "Buttery carrots in a butter sauce",
+                "prep_time": 360,
+                "cook_time": 400,
+                "inactive_time": 8600,
+                "yield_quantity": 200,
+                "yield_units": "grams",
+                "ingredients": [
+                    {
+                        "ingredient": "carrots",
+                        "quantity": 200,
+                        "units": "grams",
+                        "preparation": "diced"
+                    }
+                ],
+                "steps": [
+                    {
+                        "ordinal": 1,
+                        "instruction": "Saute the carrots in the butter"
+                    }
+                ]
+            }))
+            .unwrap(),
+        ))
+        .unwrap();
+    app.as_service()
+        .ready()
+        .await
+        .unwrap()
+        .call(request)
+        .await
+        .unwrap();
+
+    let request = get_authed_request_builder("/recipe/1", "POST")
+        .body(Body::from(
+            serde_json::to_vec(&json!({
+                "id": 1,
+                "title": "Buttered Carrots",
+                "description": "Buttery carrots in a butter sauce",
+                "prep_time": 360,
+                "cook_time": 400,
+                "inactive_time": 8600,
+                "yield_quantity": 200,
+                "yield_units": "grams",
+                "ingredients": [
+                    {
+                        "id": 1,
+                        "ingredient": "carrots",
+                        "quantity": 200,
+                        "units": "grams",
+                        "preparation": "diced"
+                    },
+                    {
+                        "ingredient": "butter",
+                        "quantity": 400,
+                        "units": "grams",
+                        "preparation": "melted"
+                    }
+                ],
+                "steps": [
+                    {
+                        "id": 1,
+                        "ordinal": 1,
+                        "instruction": "Saute the carrots in the butter"
+                    }
+                ]
+            }))
+            .unwrap(),
+        ))
+        .unwrap();
+    let result = app
+        .as_service()
+        .ready()
+        .await
+        .unwrap()
+        .call(request)
+        .await
+        .unwrap();
+
+    assert_eq!(result.status(), StatusCode::OK);
+    let body = body::to_bytes(result.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let json: GetRecipe = serde_json::from_slice(&body).unwrap();
+
+    let updated_recipe: GetRecipe = serde_json::from_value(json!({
+        "id": 1,
+        "author": {
+            "id": 1,
+            "name": "Matt"
+        },
+        "title": "Buttered Carrots",
+        "description": "Buttery carrots in a butter sauce",
+        "prep_time": 360,
+        "cook_time": 400,
+        "inactive_time": 8600,
+        "yield_quantity": 200,
+        "yield_units": "grams",
+        "ingredients": [
+            {
+                "id": 1,
+                "ingredient": "carrots",
+                "quantity": 200,
+                "units": "grams",
+                "preparation": "diced"
+            },
+            {
+                "id": 2,
+                "ingredient": "butter",
+                "quantity": 400,
+                "units": "grams",
+                "preparation": "melted"
+            }
+        ],
+        "steps": [
+            {
+                "id": 1,
+                "ordinal": 1,
+                "instruction": "Saute the carrots in the butter"
+            }
+        ]
+    }))
+    .unwrap();
+    assert_eq!(json, updated_recipe);
+
+    let result = app
+        .as_service()
+        .ready()
+        .await
+        .unwrap()
+        .call(
+            Request::builder()
+                .uri("/recipe/1")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(result.status(), StatusCode::OK);
+    let body = body::to_bytes(result.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let json: GetRecipe = serde_json::from_slice(&body).unwrap();
+    assert_eq!(json, updated_recipe);
 }

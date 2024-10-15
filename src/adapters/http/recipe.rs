@@ -1,5 +1,5 @@
 use serde_with::{self};
-use std::{fmt::Display, sync::Arc};
+use std::{collections::HashSet, fmt::Display, sync::Arc};
 
 use axum::{
     extract::{Path, State},
@@ -26,7 +26,7 @@ impl Display for Units {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Hash, Debug)]
 pub struct GetRecipeIngredient {
     pub id: i32,
     pub ingredient: String,
@@ -47,7 +47,7 @@ impl From<domain::recipe::RecipeIngredient> for GetRecipeIngredient {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Hash, Debug)]
 pub struct GetStep {
     pub id: i32,
     pub ordinal: i32,
@@ -65,7 +65,7 @@ impl From<domain::recipe::Step> for GetStep {
 }
 
 #[serde_with::serde_as]
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct GetRecipe {
     pub id: i32,
     pub title: String,
@@ -79,8 +79,8 @@ pub struct GetRecipe {
     pub inactive_time: Option<chrono::Duration>,
     pub yield_quantity: i32,
     pub yield_units: String,
-    pub ingredients: Vec<GetRecipeIngredient>,
-    pub steps: Vec<GetStep>,
+    pub ingredients: HashSet<GetRecipeIngredient>,
+    pub steps: HashSet<GetStep>,
 }
 
 impl From<domain::Recipe> for GetRecipe {
