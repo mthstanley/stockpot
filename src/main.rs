@@ -44,7 +44,10 @@ async fn main() -> anyhow::Result<()> {
                 Box::new(repositories::PostgresAuthUserRepository::new(pool.clone())),
                 user_service.clone(),
             ));
-            http::App::new(user_service.clone(), auth_user_service)
+            let recipe_service = Box::new(service::DefaultRecipeService::new(Box::new(
+                repositories::PostgresRecipeRepository::new(pool.clone()),
+            )));
+            http::App::new(user_service.clone(), auth_user_service, recipe_service)
                 .serve(s.addr)
                 .await?;
         }

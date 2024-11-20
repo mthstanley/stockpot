@@ -16,7 +16,7 @@ use super::{
     AppState,
 };
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct GetUser {
     pub id: i32,
     pub name: String,

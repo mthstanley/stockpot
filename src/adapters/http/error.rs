@@ -66,6 +66,15 @@ impl From<domain::auth::Error> for AppError {
     }
 }
 
+impl From<domain::recipe::Error> for AppError {
+    fn from(value: domain::recipe::Error) -> Self {
+        match value {
+            domain::recipe::Error::RecipeNotFound(_) => Self::EntityNotFound(value.to_string()),
+            domain::recipe::Error::Unexpected => Self::Unexpected(value.to_string()),
+        }
+    }
+}
+
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         let body = Json(ErrorResponse::from(&self));
