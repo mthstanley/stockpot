@@ -9,7 +9,7 @@ use anyhow::Context;
 use axum::{body::Body, http::Request, Router};
 use tower::{util::Oneshot, ServiceExt};
 
-use crate::core::{domain, port};
+use crate::core::port;
 
 pub struct App {
     state: AppState,
@@ -18,20 +18,14 @@ pub struct App {
 
 pub struct AppState {
     user_service: Arc<dyn port::UserService + Send + Sync>,
-    auth_user_service: Arc<
-        dyn port::AuthUserService<domain::UserCredentials, domain::UserCredentials> + Send + Sync,
-    >,
+    auth_user_service: Arc<dyn port::AuthUserService + Send + Sync>,
     recipe_service: Box<dyn port::RecipeService + Send + Sync>,
 }
 
 impl App {
     pub fn new(
         user_service: Arc<dyn port::UserService + Send + Sync>,
-        auth_user_service: Arc<
-            dyn port::AuthUserService<domain::UserCredentials, domain::UserCredentials>
-                + Send
-                + Sync,
-        >,
+        auth_user_service: Arc<dyn port::AuthUserService + Send + Sync>,
         recipe_service: Box<dyn port::RecipeService + Send + Sync>,
     ) -> App {
         Self {

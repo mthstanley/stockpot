@@ -29,6 +29,11 @@ pub struct CreateUser {
     pub name: String,
 }
 
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+pub struct GetToken {
+    pub token: String,
+}
+
 impl From<CreateUser> for domain::User {
     fn from(value: CreateUser) -> Self {
         Self {
@@ -47,7 +52,7 @@ impl From<domain::User> for GetUser {
     }
 }
 
-impl From<CreateUser> for domain::UserCredentials {
+impl From<CreateUser> for domain::auth::UsernameAndPassword {
     fn from(value: CreateUser) -> Self {
         Self {
             username: value.username,
@@ -61,6 +66,7 @@ pub fn build_routes() -> Router<Arc<AppState>> {
         .route("/user/:id", get(get_user))
         .route("/user", post(create_user))
         .route("/user/auth", get(get_auth_user))
+        .route("/user/token", post(create_token))
 }
 
 pub async fn get_user(
@@ -84,6 +90,15 @@ pub async fn create_user(
         .create_auth_user(user.clone(), user_request.clone().into())
         .await?;
     Ok((StatusCode::CREATED, Json(user.into())))
+}
+
+pub async fn create_token(
+    State(state): State<Arc<AppState>>,
+    ExtractAuthUser(auth_user): ExtractAuthUser,
+) -> anyhow::Result<Json<GetToken>, AppError> {
+    Ok(Json(GetToken {
+        token: state.auth_user_service.generate_jwt_token(auth_user)?,
+    }))
 }
 
 // TODO: remove

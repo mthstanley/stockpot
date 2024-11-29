@@ -43,6 +43,7 @@ async fn main() -> anyhow::Result<()> {
             let auth_user_service = Arc::new(service::DefaultAuthUserService::new(
                 Box::new(repositories::PostgresAuthUserRepository::new(pool.clone())),
                 user_service.clone(),
+                s.jwt_token_secret,
             ));
             let recipe_service = Box::new(service::DefaultRecipeService::new(Box::new(
                 repositories::PostgresRecipeRepository::new(pool.clone()),

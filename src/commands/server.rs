@@ -51,4 +51,12 @@ pub struct RootCommand {
         value_name = "DATABASE"
     )]
     pub db_database: String,
+
+    #[clap(
+        value_parser,
+        default_value = "secret",
+        env = "JWT_TOKEN_SECRET",
+        value_name = "SECRET"
+    )]
+    pub jwt_token_secret: String,
 }
