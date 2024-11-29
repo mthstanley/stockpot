@@ -18,10 +18,10 @@ services:
   # docker-compose run -it --entrypoint sh migrate
   migrate:
     build:
-      context: .
+      context: api
       dockerfile: docker/sqlxcli.dockerfile
     volumes:
-      - "./migrations:/app/migrations"
+      - "./api/migrations:/api/migrations"
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres/stockpot
     entrypoint: sh -c "./sqlx database create; ./sqlx migrate run"
@@ -30,26 +30,26 @@ services:
 
   unit-test:
     build:
-      context: .
+      context: api
       dockerfile: docker/unit-test.dockerfile
     volumes:
-      - ".:/app"
+      - "./api:/api"
 
   integration-test:
     build:
-      context: .
+      context: api
       dockerfile: docker/integration-test.dockerfile
     env_file:
       - .env.integration-test
     volumes:
-      - ".:/app"
+      - "./api:/api"
     depends_on:
       - postgres
 
-  app:
+  api:
     build:
-      context: .
-      dockerfile: docker/app.dockerfile
+      context: api
+      dockerfile: docker/api.dockerfile
     env_file:
       - .env.local
     ports:

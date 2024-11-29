@@ -7,5 +7,5 @@ RUN cp $CARGO_HOME/bin/sqlx .
 
 from rust:1.74-alpine
 RUN apk add libc6-compat
-WORKDIR /app
+WORKDIR /api
 COPY --from=builder /build/sqlx sqlx
