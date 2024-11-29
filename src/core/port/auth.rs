@@ -18,11 +18,18 @@ pub trait AuthUserRepository {
 }
 
 #[async_trait]
-pub trait AuthUserService<C, V> {
-    async fn validate(&self, credentials: V) -> Result<domain::AuthUser, domain::auth::Error>;
+pub trait AuthUserService {
+    async fn validate(
+        &self,
+        credentials: domain::UserCredentials,
+    ) -> Result<domain::AuthUser, domain::auth::Error>;
     async fn create_auth_user(
         &self,
         user: domain::User,
-        credentials: C,
+        credentials: domain::auth::UsernameAndPassword,
     ) -> Result<domain::AuthUser, domain::auth::Error>;
+    fn generate_jwt_token(
+        &self,
+        auth_user: domain::AuthUser,
+    ) -> Result<String, domain::auth::Error>;
 }

@@ -23,6 +23,7 @@ fn create_app(pool: PgPool) -> http::App {
     let auth_service = Arc::new(service::DefaultAuthUserService::new(
         Box::new(repositories::PostgresAuthUserRepository::new(pool.clone())),
         user_service.clone(),
+        String::from("secret"),
     ));
     let recipe_service = Box::new(service::DefaultRecipeService::new(Box::new(
         repositories::PostgresRecipeRepository::new(pool),
@@ -207,6 +208,55 @@ async fn test_successful_authentication(pool: PgPool) {
 
     let result = app
         .oneshot(request.body(Body::empty()).unwrap())
+        .await
+        .unwrap();
+
+    assert_eq!(result.status(), StatusCode::OK);
+    let body = body::to_bytes(result.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let json: Value = serde_json::from_slice(&body).unwrap();
+    assert_eq!(
+        json,
+        json!({"message": "Successful authentication for Matt"})
+    );
+}
+
+#[sqlx::test(fixtures("user"))]
+async fn test_token_authentication_flow(pool: PgPool) {
+    let mut app = create_app(pool.clone()).router();
+
+    let mut request = Request::builder().uri("/user/token").method("POST");
+    request
+        .headers_mut()
+        .map(|h| h.typed_insert(headers::Authorization::basic("matt42", "secret")));
+
+    let token_response = app
+        .as_service()
+        .ready()
+        .await
+        .unwrap()
+        .call(request.body(Body::empty()).unwrap())
+        .await
+        .unwrap();
+    assert_eq!(token_response.status(), StatusCode::OK);
+    let token_body = body::to_bytes(token_response.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let token_json: Value = serde_json::from_slice(&token_body).unwrap();
+    let token = token_json["token"].as_str().unwrap();
+
+    let mut request = Request::builder().uri("/user/auth");
+    request
+        .headers_mut()
+        .map(|h| h.typed_insert(headers::Authorization::bearer(token).unwrap()));
+
+    let result = app
+        .as_service()
+        .ready()
+        .await
+        .unwrap()
+        .call(request.body(Body::empty()).unwrap())
         .await
         .unwrap();
 

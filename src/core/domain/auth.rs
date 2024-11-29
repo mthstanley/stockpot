@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use super::{user, User};
 use secrecy::Secret;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 #[derive(Error, Debug, PartialEq)]
@@ -26,11 +26,24 @@ impl From<user::Error> for Error {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Claims {
+    pub aud: String,
+    pub sub: String,
+    pub exp: u64,
+}
+
 #[derive(Serialize, Clone, Debug)]
-pub struct UserCredentials {
+pub struct UsernameAndPassword {
     pub username: String,
     #[serde(skip_serializing)]
     pub password: Secret<String>,
+}
+
+#[derive(Serialize, Clone, Debug)]
+pub enum UserCredentials {
+    UsernameAndPassword(UsernameAndPassword),
+    JwtToken(String),
 }
 
 #[derive(Serialize, Clone, Debug)]
@@ -59,5 +72,6 @@ impl Display for AuthUserCredentials {
 
 #[derive(Serialize)]
 pub struct AuthUser {
+    pub username: String,
     pub user: User,
 }

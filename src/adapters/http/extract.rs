@@ -5,7 +5,11 @@ use axum::{
     extract::{FromRef, FromRequestParts},
     http::{request::Parts, HeaderMap},
 };
-use headers::{self, authorization::Basic, HeaderMapExt};
+use headers::{
+    self,
+    authorization::{Basic, Bearer},
+    Authorization, HeaderMapExt,
+};
 use secrecy::Secret;
 use serde::de::DeserializeOwned;
 
@@ -50,20 +54,25 @@ where
                 domain::auth::Error::InvalidAuth
             })?;
 
-        let basic_auth: headers::Authorization<Basic> = match header_map.typed_get() {
-            Some(header_value) => Ok(header_value),
-            None => Err(domain::auth::Error::InvalidAuth),
-        }?;
+        let credentials;
+        if let Some(basic_auth) = header_map.typed_get::<Authorization<Basic>>() {
+            credentials = Ok(domain::UserCredentials::UsernameAndPassword(
+                domain::auth::UsernameAndPassword {
+                    username: basic_auth.username().to_owned(),
+                    password: Secret::from(basic_auth.password().to_owned()),
+                },
+            ));
+        } else if let Some(bearer_auth) = header_map.typed_get::<Authorization<Bearer>>() {
+            credentials = Ok(domain::UserCredentials::JwtToken(
+                bearer_auth.token().to_owned(),
+            ));
+        } else {
+            credentials = Err(domain::auth::Error::InvalidAuth);
+        }
 
         let app_state = Arc::<AppState>::from_ref(state);
         Ok(ExtractAuthUser(
-            app_state
-                .auth_user_service
-                .validate(domain::UserCredentials {
-                    username: basic_auth.username().into(),
-                    password: Secret::from(String::from(basic_auth.password())),
-                })
-                .await?,
+            app_state.auth_user_service.validate(credentials?).await?,
         ))
     }
 }
