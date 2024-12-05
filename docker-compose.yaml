@@ -58,6 +58,13 @@ services:
       migrate:
         condition: service_completed_successfully
 
+  ui:
+    build:
+      context: .
+      dockerfile: docker/ui.dockerfile
+    ports:
+      - "8090:80"
+
 networks:
   app:
     driver: bridge
