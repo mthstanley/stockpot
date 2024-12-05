@@ -1,13 +1,14 @@
 from rust:1.74-alpine
 RUN apk add pkgconfig libressl-dev musl-dev
 ## Start: Cache Dependencies ##
+WORKDIR /app
 RUN cargo new --bin api
-WORKDIR /api
-COPY Cargo.toml /api/
-COPY Cargo.lock /api/
+COPY Cargo.toml /app/
+COPY Cargo.lock /app/
+COPY api/Cargo.toml /app/api/
 RUN cargo build --release
-COPY src /api/src
-RUN touch src/main.rs
+COPY api/src /app/api/src
+RUN touch api/src/main.rs
 ## End: Cache Dependencies ##
 
 CMD ["cargo", "test", "--lib"]
