@@ -1,4 +1,4 @@
-from rust:1.74-alpine as builder
+from rust:1.83-alpine as builder
 WORKDIR /build
 RUN apk add pkgconfig musl-dev libressl-dev
 RUN cargo install sqlx-cli
