@@ -8,6 +8,7 @@ use std::{net::SocketAddr, sync::Arc};
 use anyhow::Context;
 use axum::{body::Body, http::Request, Router};
 use tower::{util::Oneshot, ServiceExt};
+use tower_http::cors::CorsLayer;
 
 use crate::core::port;
 
@@ -36,7 +37,8 @@ impl App {
             },
             router: Router::new()
                 .merge(user::build_routes())
-                .merge(recipe::build_routes()),
+                .merge(recipe::build_routes())
+                .layer(CorsLayer::permissive()),
         }
     }
 

@@ -40,7 +40,7 @@ services:
       context: .
       dockerfile: docker/integration-test.dockerfile
     env_file:
-      - .env.integration-test
+      - api/.env.integration-test
     volumes:
       - ".:/app"
     depends_on:
@@ -51,7 +51,7 @@ services:
       context: .
       dockerfile: docker/api.dockerfile
     env_file:
-      - .env.local
+      - api/.env.local
     ports:
       - "8080:8080"
     depends_on:

@@ -1,4 +1,4 @@
-from rust:1.74-alpine as builder
+from rust:1.83-alpine as builder
 RUN apk add pkgconfig libressl-dev musl-dev
 ## Start: Cache Dependencies ##
 WORKDIR /app
