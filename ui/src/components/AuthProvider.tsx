@@ -1,5 +1,5 @@
 import {createContext, ReactNode, useContext, useState} from "react";
-import {apiClient} from "../utils/api";
+import {apiClient, GetTokenResponse} from "../utils/api";
 import {Navigate, useLocation} from "react-router";
 
 interface AuthUser {
@@ -8,36 +8,36 @@ interface AuthUser {
 }
 
 interface AuthContextType {
-    user: AuthUser;
+    user: AuthUser | null;
     signin: (username: string, password: string, callback: VoidFunction) => void;
     signout: (callback: VoidFunction) => void;
 }
 
-let AuthContext = createContext<AuthContextType>(null!);
+const AuthContext = createContext<AuthContextType>(null!);
 
 const AuthProvider = ({children}: {children: ReactNode}) => {
-    let [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<AuthUser | null>(null);
 
-    let signin = (username: string, password: string, callback: VoidFunction) => {
-        const token = apiClient.login(username, password);
-        setUser({username, token});
+    const signin = (username: string, password: string, callback: VoidFunction) => {
+        const tokenResponse: GetTokenResponse = apiClient.login(username, password);
+        setUser({username, token: tokenResponse.token});
         callback();
     };
 
-    let signout = (callback: VoidFunction) => {
+    const signout = (callback: VoidFunction) => {
         apiClient.logout();
         setUser(null);
         callback();
     };
 
-    let value = {user, signin, signout};
+    const value = {user, signin, signout};
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const RequireAuth = ({ children }: { children: JSX.Element }) => {
-  let auth = useAuth();
-  let location = useLocation();
+  const auth = useAuth();
+  const location = useLocation();
 
   if (!auth.user) {
     // Redirect them to the /signin page, but save the current location they were

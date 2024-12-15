@@ -3,16 +3,16 @@ import {useAuth} from "../AuthProvider";
 import {apiClient} from "../../utils/api";
 
 const SignupPage = () => {
-    let navigate = useNavigate();
-    let auth = useAuth();
+    const navigate = useNavigate();
+    const auth = useAuth();
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        let formData = new FormData(event.currentTarget);
-        let name = formData.get("name") as string;
-        let username = formData.get("username") as string;
-        let password = formData.get("password") as string;
+        const formData = new FormData(event.currentTarget);
+        const name = formData.get("name") as string;
+        const username = formData.get("username") as string;
+        const password = formData.get("password") as string;
 
         apiClient.createUser({name, username, password});
         auth.signin(username, password, () => {

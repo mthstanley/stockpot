@@ -2,8 +2,8 @@ import {useNavigate} from 'react-router';
 import { useAuth} from '../AuthProvider';
 
 const ProfilePage = () => {
-  let auth = useAuth();
-  let navigate = useNavigate();
+  const auth = useAuth();
+  const navigate = useNavigate();
 
   if (!auth.user) {
     return <p>You are not logged in.</p>;

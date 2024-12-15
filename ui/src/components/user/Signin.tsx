@@ -2,18 +2,18 @@ import {useLocation, useNavigate} from "react-router";
 import {useAuth} from "../AuthProvider";
 
 const SigninPage = () => {
-    let navigate = useNavigate();
-    let location = useLocation();
-    let auth = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const auth = useAuth();
 
-    let from = location.state?.from?.pathname || "/";
+    const from = location.state?.from?.pathname || "/";
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        let formData = new FormData(event.currentTarget);
-        let username = formData.get("username") as string;
-        let password = formData.get("password") as string;
+        const formData = new FormData(event.currentTarget);
+        const username = formData.get("username") as string;
+        const password = formData.get("password") as string;
 
         auth.signin(username, password, () => {
             // Send them back to the page they tried to visit when they were

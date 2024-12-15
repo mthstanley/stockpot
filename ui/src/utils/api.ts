@@ -1,17 +1,17 @@
 import {config} from "../config";
 
-interface GetUserResponse {
+export interface GetUserResponse {
     id: number;
     name: string;
 }
 
-interface CreateUserRequest {
+export interface CreateUserRequest {
     username: string;
     password: string;
     name: string;
 }
 
-interface GetTokenResponse {
+export interface GetTokenResponse {
     token: string;
 }
 
@@ -25,13 +25,12 @@ class ApiClient {
     }
 
     createUser(request: CreateUserRequest): GetUserResponse {
-        console.log(request);
         return {id: -1, name: request.name};
     }
 
     login(username: string, password: string): GetTokenResponse {
         console.log(username, password);
-        let token: string = "secret";
+        const token: string = "secret";
         this.token = token;
         return {token};
     }
