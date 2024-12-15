@@ -5,13 +5,14 @@ FROM node:22 as build
 WORKDIR /app
 
 # Copy package.json and package-lock.json to the working directory
-COPY ui/package*.json ./
+COPY package*.json ./
+COPY ui/package.json ./ui/
 
 # Install dependencies
 RUN npm install
 
 # Copy the entire application code to the container
-COPY ui .
+COPY ui ./ui/
 
 # Build the React app for production
 RUN npm run build
@@ -20,7 +21,7 @@ RUN npm run build
 FROM nginx:alpine
 
 # Copy the built React app to Nginx's web server directory
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/ui/dist /usr/share/nginx/html
 
 COPY docker/files/nginx.conf /etc/nginx/conf.d/default.conf
 
