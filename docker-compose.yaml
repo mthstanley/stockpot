@@ -21,7 +21,7 @@ services:
       context: .
       dockerfile: docker/sqlxcli.dockerfile
     volumes:
-      - "./migrations:/app/migrations"
+      - "./api/migrations:/app/migrations"
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres/stockpot
     entrypoint: sh -c "./sqlx database create; ./sqlx migrate run"
@@ -40,23 +40,30 @@ services:
       context: .
       dockerfile: docker/integration-test.dockerfile
     env_file:
-      - .env.integration-test
+      - api/.env.integration-test
     volumes:
       - ".:/app"
     depends_on:
       - postgres
 
-  app:
+  api:
     build:
       context: .
-      dockerfile: docker/app.dockerfile
+      dockerfile: docker/api.dockerfile
     env_file:
-      - .env.local
+      - api/.env.local
     ports:
       - "8080:8080"
     depends_on:
       migrate:
         condition: service_completed_successfully
+
+  ui:
+    build:
+      context: .
+      dockerfile: docker/ui.dockerfile
+    ports:
+      - "8090:80"
 
 networks:
   app:

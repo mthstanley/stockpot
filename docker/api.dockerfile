@@ -1,13 +1,14 @@
-from rust:1.74-alpine as builder
+from rust:1.83-alpine as builder
 RUN apk add pkgconfig libressl-dev musl-dev
 ## Start: Cache Dependencies ##
-RUN cargo new --bin app
 WORKDIR /app
+RUN cargo new --bin api
 COPY Cargo.toml /app/
 COPY Cargo.lock /app/
+COPY api/Cargo.toml /app/api/
 RUN cargo build --release
-COPY src /app/src
-RUN touch src/main.rs
+COPY api/src /app/api/src
+RUN touch api/src/main.rs
 ## End: Cache Dependencies ##
 
 ## Build Binary ##

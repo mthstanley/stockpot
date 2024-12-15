@@ -1,3 +1,7 @@
-/target
+**/target
 
 .env
+
+.vite
+**/node_modules
+**/dist
