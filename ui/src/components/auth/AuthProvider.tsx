@@ -3,18 +3,23 @@ import {apiClient, GetTokenResponse} from "../../utils/api";
 import {Navigate, useLocation} from "react-router";
 import {AuthContext, AuthUser, useAuth} from "./authContext";
 
+const USER_STORAGE_KEY = "user";
 
 const AuthProvider = ({children}: {children: ReactNode}) => {
-    const [user, setUser] = useState<AuthUser | null>(null);
+    const userJson = localStorage.getItem(USER_STORAGE_KEY)
+    const [user, setUser] = useState<AuthUser | null>(userJson && JSON.parse(userJson));
 
     const signin = (username: string, password: string, callback: VoidFunction) => {
         const tokenResponse: GetTokenResponse = apiClient.login(username, password);
-        setUser({username, token: tokenResponse.token});
+        const newUser = {username, token: tokenResponse.token};
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser));
+        setUser(newUser);
         callback();
     };
 
     const signout = (callback: VoidFunction) => {
         apiClient.logout();
+        localStorage.removeItem(USER_STORAGE_KEY);
         setUser(null);
         callback();
     };
