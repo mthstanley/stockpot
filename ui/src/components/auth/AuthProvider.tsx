@@ -1,19 +1,8 @@
-import {createContext, ReactNode, useContext, useState} from "react";
-import {apiClient, GetTokenResponse} from "../utils/api";
+import {ReactNode, useState} from "react";
+import {apiClient, GetTokenResponse} from "../../utils/api";
 import {Navigate, useLocation} from "react-router";
+import {AuthContext, AuthUser, useAuth} from "./authContext";
 
-interface AuthUser {
-    username: string;
-    token: string;
-}
-
-interface AuthContextType {
-    user: AuthUser | null;
-    signin: (username: string, password: string, callback: VoidFunction) => void;
-    signout: (callback: VoidFunction) => void;
-}
-
-const AuthContext = createContext<AuthContextType>(null!);
 
 const AuthProvider = ({children}: {children: ReactNode}) => {
     const [user, setUser] = useState<AuthUser | null>(null);
@@ -50,8 +39,5 @@ export const RequireAuth = ({ children }: { children: JSX.Element }) => {
   return children;
 };
 
-export const useAuth = () => {
-    return useContext(AuthContext);
-};
 
 export default AuthProvider;

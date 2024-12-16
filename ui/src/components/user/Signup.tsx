@@ -1,5 +1,5 @@
 import {useNavigate} from "react-router";
-import {useAuth} from "../AuthProvider";
+import {useAuth} from "../auth/authContext";
 import {apiClient} from "../../utils/api";
 
 const SignupPage = () => {

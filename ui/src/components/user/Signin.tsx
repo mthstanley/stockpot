@@ -1,5 +1,5 @@
 import {useLocation, useNavigate} from "react-router";
-import {useAuth} from "../AuthProvider";
+import {useAuth} from "../auth/authContext";
 
 const SigninPage = () => {
     const navigate = useNavigate();

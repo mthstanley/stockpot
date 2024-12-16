@@ -1,5 +1,5 @@
 import {useNavigate} from 'react-router';
-import { useAuth} from '../AuthProvider';
+import { useAuth} from '../auth/authContext';
 
 const ProfilePage = () => {
   const auth = useAuth();

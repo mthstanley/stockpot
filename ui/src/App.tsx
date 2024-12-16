@@ -2,7 +2,7 @@ import './App.css'
 import {Route, Routes} from 'react-router'
 import HomePage from './components/Home'
 import SignupPage from './components/user/Signup'
-import AuthProvider, {RequireAuth} from './components/AuthProvider'
+import AuthProvider, {RequireAuth} from './components/auth/AuthProvider'
 import ProfilePage from './components/user/Profile'
 import SigninPage from './components/user/Signin'
 
