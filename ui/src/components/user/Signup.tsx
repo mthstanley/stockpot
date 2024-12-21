@@ -6,7 +6,7 @@ const SignupPage = () => {
     const navigate = useNavigate();
     const auth = useAuth();
 
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
         const formData = new FormData(event.currentTarget);
@@ -14,7 +14,7 @@ const SignupPage = () => {
         const username = formData.get("username") as string;
         const password = formData.get("password") as string;
 
-        apiClient.createUser({name, username, password});
+        await apiClient.createUser({name, username, password});
         auth.signin(username, password, () => {
             // Send them back to the page they tried to visit when they were
             // redirected to the login page. Use { replace: true } so we don't create

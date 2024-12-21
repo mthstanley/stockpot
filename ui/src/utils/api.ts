@@ -1,3 +1,4 @@
+import axios, {AxiosInstance} from "axios";
 import {config} from "../config";
 
 export interface GetUserResponse {
@@ -16,27 +17,37 @@ export interface GetTokenResponse {
 }
 
 class ApiClient {
-    urlBase: URL;
-    token: string;
+    client: AxiosInstance;
+    tokenExpirationCallback: VoidFunction;
 
     constructor(urlBase: URL) {
-        this.urlBase = urlBase;
-        this.token = "";
+        this.client = axios.create({baseURL: urlBase.toString()});
+        this.client.defaults.headers.post["Content-Type"] = "application/json";
+        this.tokenExpirationCallback = () => {};
+        this.client.interceptors.response.use(response => response, error => {
+            if (error.response) {
+                if (error.response.status === 401) {
+                    this.tokenExpirationCallback();
+                }
+            }
+            return Promise.reject(error);
+        })
     }
 
-    createUser(request: CreateUserRequest): GetUserResponse {
-        return {id: -1, name: request.name};
+    async createUser(request: CreateUserRequest): Promise<GetUserResponse> {
+        return this.client.post<CreateUserRequest, GetUserResponse>("/user", request);
     }
 
-    login(username: string, password: string): GetTokenResponse {
-        console.log(username, password);
-        const token: string = "secret";
-        this.token = token;
-        return {token};
+    async login(username: string, password: string, tokenExpirationCallback: VoidFunction): Promise<GetTokenResponse> {
+        return this.client.post<null, GetTokenResponse>("/user/token", {}, {auth: {username, password}}).then(response => {
+            this.client.defaults.headers.common["Authorization"] = `Bearer ${response.token}`;
+            this.tokenExpirationCallback = tokenExpirationCallback;
+            return response;
+        });
     }
 
     logout() {
-        this.token = "";
+        this.client.defaults.headers.common["Authorization"] = "";
     }
 }
 
