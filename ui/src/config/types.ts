@@ -1,6 +1,5 @@
 interface AppConfig {
-    apiBaseUrl: URL;
+  apiBaseUrl: URL;
 }
 
-export default AppConfig
-
+export default AppConfig;

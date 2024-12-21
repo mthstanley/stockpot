@@ -1,5 +1,5 @@
-import {useNavigate} from 'react-router';
-import { useAuth} from '../auth/authContext';
+import { useNavigate } from "react-router";
+import { useAuth } from "../auth/authContext";
 
 const ProfilePage = () => {
   const auth = useAuth();
@@ -21,6 +21,6 @@ const ProfilePage = () => {
       </button>
     </p>
   );
-}
+};
 
 export default ProfilePage;
