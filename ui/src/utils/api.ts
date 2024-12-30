@@ -16,6 +16,34 @@ export interface GetTokenResponse {
   token: string;
 }
 
+export interface GetRecipeIngredientResponse {
+  id: number;
+  ingredient: string;
+  quantity: number;
+  units: string;
+  preparation: string;
+}
+
+export interface GetStepResponse {
+  id: number;
+  ordinal: number;
+  instruction: string;
+}
+
+export interface GetRecipeResponse {
+  id: number;
+  title: string;
+  description: string | null;
+  author: GetUserResponse;
+  prepTime: number;
+  cookTime: number;
+  inactiveTime: number;
+  yieldQuantity: number;
+  yieldUnits: string;
+  ingredients: Set<GetRecipeIngredientResponse>;
+  steps: Set<GetStepResponse>;
+}
+
 class ApiClient {
   client: AxiosInstance;
   tokenExpirationCallback: VoidFunction;
@@ -38,10 +66,9 @@ class ApiClient {
   }
 
   async createUser(request: CreateUserRequest): Promise<GetUserResponse> {
-    return this.client.post<CreateUserRequest, GetUserResponse>(
-      "/user",
-      request,
-    );
+    return this.client
+      .post<GetUserResponse>("/user", request)
+      .then((response) => response.data);
   }
 
   async login(
@@ -50,20 +77,33 @@ class ApiClient {
     tokenExpirationCallback: VoidFunction,
   ): Promise<GetTokenResponse> {
     return this.client
-      .post<
-        null,
-        GetTokenResponse
-      >("/user/token", {}, { auth: { username, password } })
+      .post<GetTokenResponse>(
+        "/user/token",
+        {},
+        { auth: { username, password } },
+      )
       .then((response) => {
         this.client.defaults.headers.common["Authorization"] =
-          `Bearer ${response.token}`;
+          `Bearer ${response.data.token}`;
         this.tokenExpirationCallback = tokenExpirationCallback;
-        return response;
+        return response.data;
       });
   }
 
   logout() {
     this.client.defaults.headers.common["Authorization"] = "";
+  }
+
+  async getRecipes(): Promise<Set<GetRecipeResponse>> {
+    return this.client
+      .get<Set<GetRecipeResponse>>("/recipe")
+      .then((response) => response.data);
+  }
+
+  async getRecipe(id: number): Promise<GetRecipeResponse> {
+    return this.client
+      .get<GetRecipeResponse>(`/recipe/${id}`)
+      .then((response) => response.data);
   }
 }
 
