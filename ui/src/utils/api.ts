@@ -1,5 +1,11 @@
-import axios, { AxiosInstance } from "axios";
+import axios, {
+  AxiosError,
+  AxiosInstance,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+} from "axios";
 import { config } from "../config";
+import { camelKeys, snakeKeys } from "./case";
 
 export interface GetUserResponse {
   id: number;
@@ -35,9 +41,9 @@ export interface GetRecipeResponse {
   title: string;
   description: string | null;
   author: GetUserResponse;
-  prepTime: number;
-  cookTime: number;
-  inactiveTime: number;
+  prepTime: number | null;
+  cookTime: number | null;
+  inactiveTime: number | null;
   yieldQuantity: number;
   yieldUnits: string;
   ingredients: Set<GetRecipeIngredientResponse>;
@@ -53,14 +59,42 @@ class ApiClient {
     this.client.defaults.headers.post["Content-Type"] = "application/json";
     this.tokenExpirationCallback = () => {};
     this.client.interceptors.response.use(
-      (response) => response,
-      (error) => {
+      (response: AxiosResponse): AxiosResponse => {
+        if (
+          response.data &&
+          response.headers["content-type"] === "application/json"
+        ) {
+          response.data = camelKeys(response.data);
+        }
+
+        return response;
+      },
+      (error: AxiosError): Promise<AxiosError> => {
         if (error.response) {
           if (error.response.status === 401) {
             this.tokenExpirationCallback();
           }
         }
         return Promise.reject(error);
+      },
+    );
+    this.client.interceptors.request.use(
+      (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
+        const newConfig: InternalAxiosRequestConfig = { ...config };
+
+        if (newConfig.headers["Content-Type"] === "multipart/form-data") {
+          return newConfig;
+        }
+
+        if (config.params) {
+          newConfig.params = snakeKeys(config.params);
+        }
+
+        if (config.data) {
+          newConfig.data = snakeKeys(config.data);
+        }
+
+        return newConfig;
       },
     );
   }
