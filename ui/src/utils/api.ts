@@ -77,6 +77,19 @@ export interface MutateRecipeRequest {
   steps: Array<MutateStepRequest>;
 }
 
+export interface BasicAuth {
+  username: string;
+  password: string;
+  kind: "basic";
+}
+
+export interface BearerAuth {
+  token: string;
+  kind: "bearer";
+}
+
+export type Credentials = BasicAuth | BearerAuth;
+
 class ApiClient {
   client: AxiosInstance;
   tokenExpirationCallback: VoidFunction;
@@ -126,10 +139,6 @@ class ApiClient {
     );
   }
 
-  setTokenExpirationCallback(callback: VoidFunction): void {
-    this.tokenExpirationCallback = callback;
-  }
-
   async createUser(request: CreateUserRequest): Promise<GetUserResponse> {
     return this.client
       .post<GetUserResponse>("/user", request)
@@ -137,22 +146,34 @@ class ApiClient {
   }
 
   async login(
-    username: string,
-    password: string,
+    credentials: Credentials,
     tokenExpirationCallback: VoidFunction,
   ): Promise<GetTokenResponse> {
-    return this.client
-      .post<GetTokenResponse>(
-        "/user/token",
-        {},
-        { auth: { username, password } },
-      )
-      .then((response) => {
+    switch (credentials.kind) {
+      case "basic":
+        return this.client
+          .post<GetTokenResponse>(
+            "/user/token",
+            {},
+            {
+              auth: {
+                username: credentials.username,
+                password: credentials.password,
+              },
+            },
+          )
+          .then((response) => {
+            this.client.defaults.headers.common["Authorization"] =
+              `Bearer ${response.data.token}`;
+            this.tokenExpirationCallback = tokenExpirationCallback;
+            return response.data;
+          });
+      case "bearer":
         this.client.defaults.headers.common["Authorization"] =
-          `Bearer ${response.data.token}`;
+          `Bearer ${credentials.token}`;
         this.tokenExpirationCallback = tokenExpirationCallback;
-        return response.data;
-      });
+        return Promise.resolve({ token: credentials.token });
+    }
   }
 
   logout() {

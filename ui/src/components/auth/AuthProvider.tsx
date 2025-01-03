@@ -19,7 +19,10 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
     callback();
   };
   const tokenExpirationCallback = () => signout(() => navigate("/"));
-  apiClient.setTokenExpirationCallback(tokenExpirationCallback);
+  apiClient.login(
+    { token: user?.token || "", kind: "bearer" },
+    tokenExpirationCallback,
+  );
 
   const signin = async (
     username: string,
@@ -27,9 +30,12 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
     callback: VoidFunction,
   ) => {
     const tokenResponse: GetTokenResponse = await apiClient.login(
-      username,
-      password,
-      () => signout(() => navigate("/")),
+      {
+        username,
+        password,
+        kind: "basic",
+      },
+      tokenExpirationCallback,
     );
     const newUser = { username, token: tokenResponse.token };
     localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser));
