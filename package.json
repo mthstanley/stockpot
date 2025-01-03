@@ -15,5 +15,8 @@
   },
   "workspaces": [
     "ui"
-  ]
+  ],
+  "dependencies": {
+    "react-hook-form": "^7.54.2"
+  }
 }

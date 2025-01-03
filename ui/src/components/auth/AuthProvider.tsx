@@ -18,6 +18,8 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     callback();
   };
+  const tokenExpirationCallback = () => signout(() => navigate("/"));
+  apiClient.setTokenExpirationCallback(tokenExpirationCallback);
 
   const signin = async (
     username: string,

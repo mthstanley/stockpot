@@ -1,4 +1,4 @@
-import { useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import {
   apiClient,
   GetRecipeIngredientResponse,
@@ -27,11 +27,14 @@ const RecipeDetailPage = () => {
             <h1>{recipe.title}</h1>
             <RecipeMeta recipe={recipe} />
             <p>{recipe.description}</p>
+            <p>
+              <Link to={`edit`}>Edit Recipe</Link>
+            </p>
           </header>
           <section>
             <h2>Ingredients</h2>
             <ul>
-              {[...recipe.ingredients].map(
+              {recipe.ingredients.map(
                 (ingredient: GetRecipeIngredientResponse) => (
                   <li>
                     {ingredient.quantity} {ingredient.units}{" "}
@@ -44,7 +47,7 @@ const RecipeDetailPage = () => {
           <section>
             <h2>Steps</h2>
             <ol>
-              {[...recipe.steps]
+              {recipe.steps
                 .sort((a, b) => a.ordinal - b.ordinal)
                 .map((step: GetStepResponse) => (
                   <li>{step.instruction}</li>

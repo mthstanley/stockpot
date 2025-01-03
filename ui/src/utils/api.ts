@@ -39,15 +39,42 @@ export interface GetStepResponse {
 export interface GetRecipeResponse {
   id: number;
   title: string;
-  description: string | null;
+  description?: string;
   author: GetUserResponse;
-  prepTime: number | null;
-  cookTime: number | null;
-  inactiveTime: number | null;
+  prepTime?: number;
+  cookTime?: number;
+  inactiveTime?: number;
   yieldQuantity: number;
   yieldUnits: string;
-  ingredients: Set<GetRecipeIngredientResponse>;
-  steps: Set<GetStepResponse>;
+  ingredients: Array<GetRecipeIngredientResponse>;
+  steps: Array<GetStepResponse>;
+}
+
+export interface MutateRecipeIngredientRequest {
+  id?: number;
+  ingredient: string;
+  quantity: number;
+  units: string;
+  preparation: string;
+}
+
+export interface MutateStepRequest {
+  id?: number;
+  ordinal: number;
+  instruction: string;
+}
+
+export interface MutateRecipeRequest {
+  id?: number;
+  title: string;
+  description?: string;
+  prepTime?: number;
+  cookTime?: number;
+  inactiveTime?: number;
+  yieldQuantity: number;
+  yieldUnits: string;
+  ingredients: Array<MutateRecipeIngredientRequest>;
+  steps: Array<MutateStepRequest>;
 }
 
 class ApiClient {
@@ -99,6 +126,10 @@ class ApiClient {
     );
   }
 
+  setTokenExpirationCallback(callback: VoidFunction): void {
+    this.tokenExpirationCallback = callback;
+  }
+
   async createUser(request: CreateUserRequest): Promise<GetUserResponse> {
     return this.client
       .post<GetUserResponse>("/user", request)
@@ -137,6 +168,22 @@ class ApiClient {
   async getRecipe(id: number): Promise<GetRecipeResponse> {
     return this.client
       .get<GetRecipeResponse>(`/recipe/${id}`)
+      .then((response) => response.data);
+  }
+
+  async createRecipe(
+    createRecipeRequest: MutateRecipeRequest,
+  ): Promise<GetRecipeResponse> {
+    return this.client
+      .post<GetRecipeResponse>("/recipe", createRecipeRequest)
+      .then((response) => response.data);
+  }
+
+  async updateRecipe(
+    updateRecipeRequest: MutateRecipeRequest,
+  ): Promise<GetRecipeResponse> {
+    return this.client
+      .post(`/recipe/${updateRecipeRequest.id!}`, updateRecipeRequest)
       .then((response) => response.data);
   }
 }
