@@ -20,7 +20,7 @@ const RecipeForm = ({ recipe }: { recipe?: MutateRecipeRequest }) => {
     } else {
       response = apiClient.createRecipe(strippedRecipe);
     }
-    response.then((newRecipe) => navigate(`/recipe/${newRecipe.id}`));
+    response.then((newRecipe) => navigate(`/recipes/${newRecipe.id}`));
   });
 
   const ingredients = useFieldArray({ control, name: "ingredients" });
