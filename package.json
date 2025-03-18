@@ -2,15 +2,21 @@
   "name": "stockpot",
   "version": "0.0.0",
   "devDependencies": {
-    "npm-run-all": "4.1.5"
+    "eslint-config-prettier": "^9.1.0",
+    "npm-run-all": "4.1.5",
+    "prettier": "3.4.2"
   },
   "scripts": {
     "build": "npm run build -ws",
     "dev": "npm run dev -ws",
     "clean": "npx -y rimraf node_modules **/node_modules/ package-lock.json && npm i",
-    "lint": "npm run lint -ws"
+    "lint": "eslint ./ui && prettier ./ui --check",
+    "format": "prettier ./ui --write"
   },
   "workspaces": [
     "ui"
-  ]
+  ],
+  "dependencies": {
+    "react-hook-form": "^7.54.2"
+  }
 }

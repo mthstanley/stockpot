@@ -153,9 +153,16 @@ impl port::RecipeRepository for PostgresRecipeRepository {
         let mut sep = query_builder.separated(", ");
         sep.push_bind(&recipe.title)
             .push_bind(&recipe.description)
-            .push("(SELECT id FROM app_user WHERE name = ")
-            .push_bind_unseparated(&recipe.author.name)
-            .push_unseparated(")")
+            .push_bind(
+                recipe
+                    .author
+                    .id
+                    .ok_or(domain::recipe::Error::Unexpected)
+                    .map_err(|e| {
+                        log::error!("Author id missing when attempting to create a new recipe");
+                        e
+                    })?,
+            )
             .push_bind(recipe.prep_time)
             .push_bind(recipe.cook_time)
             .push_bind(recipe.inactive_time)
@@ -292,9 +299,16 @@ impl port::RecipeRepository for PostgresRecipeRepository {
         sep.push_bind(recipe.id)
             .push_bind(&recipe.title)
             .push_bind(&recipe.description)
-            .push("(SELECT id FROM app_user WHERE name = ")
-            .push_bind_unseparated(&recipe.author.name)
-            .push_unseparated(")")
+            .push_bind(
+                recipe
+                    .author
+                    .id
+                    .ok_or(domain::recipe::Error::Unexpected)
+                    .map_err(|e| {
+                        log::error!("Author id missing when attempting to update recipe");
+                        e
+                    })?,
+            )
             .push_bind(recipe.prep_time)
             .push_bind(recipe.cook_time)
             .push_bind(recipe.inactive_time)
