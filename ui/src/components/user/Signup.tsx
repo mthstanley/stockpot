@@ -1,21 +1,22 @@
 import { useNavigate } from "react-router";
 import { useAuth } from "../auth/authContext";
 import { apiClient } from "../../utils/api";
+import { useForm } from "react-hook-form";
+
+type FormValues = {
+  name: string;
+  username: string;
+  password: string;
+};
 
 const SignupPage = () => {
   const navigate = useNavigate();
   const auth = useAuth();
+  const { register, handleSubmit } = useForm<FormValues>();
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const formData = new FormData(event.currentTarget);
-    const name = formData.get("name") as string;
-    const username = formData.get("username") as string;
-    const password = formData.get("password") as string;
-
-    await apiClient.createUser({ name, username, password });
-    auth.signin(username, password, () => {
+  const onSubmit = handleSubmit(async (formValues: FormValues) => {
+    await apiClient.createUser(formValues);
+    auth.signin(formValues.username, formValues.password, () => {
       // Send them back to the page they tried to visit when they were
       // redirected to the login page. Use { replace: true } so we don't create
       // another entry in the history stack for the login page.  This means that
@@ -24,23 +25,30 @@ const SignupPage = () => {
       // user experience.
       navigate("/users");
     });
-  };
+  });
 
   return (
     <div>
       <h1>Sign-Up</h1>
 
-      <form onSubmit={handleSubmit}>
-        <label>
-          Name: <input name="name" type="text" />
-        </label>{" "}
-        <label>
-          Username: <input name="username" type="text" />
-        </label>{" "}
-        <label>
-          Password: <input name="password" type="text" />
-        </label>{" "}
-        <button type="submit">Sign-up</button>
+      <form onSubmit={onSubmit}>
+        <p>
+          <label htmlFor="name">Name</label>
+          <input id="name" {...register("name", { required: true })} />
+        </p>
+        <p>
+          <label htmlFor="username">Username</label>
+          <input id="username" {...register("username", { required: true })} />
+        </p>
+        <p>
+          <label htmlFor="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            {...register("password", { required: true })}
+          />
+        </p>
+        <input type="submit" value="Sign-up" />
       </form>
     </div>
   );
