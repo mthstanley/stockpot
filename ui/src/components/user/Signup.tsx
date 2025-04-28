@@ -42,7 +42,11 @@ const SignupPage = () => {
         </p>
         <p>
           <label htmlFor="password">Password</label>
-          <input id="password" {...register("password", { required: true })} />
+          <input
+            type="password"
+            id="password"
+            {...register("password", { required: true })}
+          />
         </p>
         <input type="submit" value="Sign-up" />
       </form>
