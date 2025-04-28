@@ -1,21 +1,22 @@
 import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "../auth/authContext";
+import { useForm } from "react-hook-form";
+
+type FormValues = {
+  username: string;
+  password: string;
+};
 
 const SigninPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const auth = useAuth();
+  const { register, handleSubmit } = useForm<FormValues>();
 
   const from = location.state?.from?.pathname || "/";
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const formData = new FormData(event.currentTarget);
-    const username = formData.get("username") as string;
-    const password = formData.get("password") as string;
-
-    auth.signin(username, password, () => {
+  const onSubmit = handleSubmit((credentials: FormValues) => {
+    auth.signin(credentials.username, credentials.password, () => {
       // Send them back to the page they tried to visit when they were
       // redirected to the login page. Use { replace: true } so we don't create
       // another entry in the history stack for the login page.  This means that
@@ -24,21 +25,23 @@ const SigninPage = () => {
       // user experience.
       navigate(from, { replace: true });
     });
-  };
+  });
 
   return (
     <div>
       <h1>Sign-In</h1>
       <p>You must log in to view the page at {from}</p>
 
-      <form onSubmit={handleSubmit}>
-        <label>
-          Username: <input name="username" type="text" />
-        </label>{" "}
-        <label>
-          Password: <input name="password" type="text" />
-        </label>{" "}
-        <button type="submit">Sign-in</button>
+      <form onSubmit={onSubmit}>
+        <p>
+          <label htmlFor="username">Username</label>
+          <input id="username" {...register("username", { required: true })} />
+        </p>
+        <p>
+          <label htmlFor="password">Password</label>
+          <input id="password" {...register("password", { required: true })} />
+        </p>
+        <input type="submit" value="Sign-in" />
       </form>
     </div>
   );
