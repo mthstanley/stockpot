@@ -9,10 +9,13 @@ import RecipesPage from "./components/recipe/RecipesPage";
 import RecipeDetailPage from "./components/recipe/RecipeDetailPage";
 import CreateRecipePage from "./components/recipe/CreateRecipePage";
 import EditRecipePage from "./components/recipe/EditRecipePage";
+import Navbar from "./components/navigation/Navbar";
+import Signout from "./components/user/Signout";
 
 function App() {
   return (
     <AuthProvider>
+      <Navbar />
       <Routes>
         <Route index element={<HomePage />} />
         <Route path="users">
@@ -26,6 +29,7 @@ function App() {
           />
           <Route path="signup" element={<SignupPage />} />
           <Route path="signin" element={<SigninPage />} />
+          <Route path="signout" element={<Signout />} />
         </Route>
         <Route path="recipes">
           <Route index element={<RecipesPage />} />
