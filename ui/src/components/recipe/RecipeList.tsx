@@ -16,8 +16,8 @@ const RecipeList = () => {
   return (
     <>
       <ul>
-        {[...data].map((recipe) => (
-          <li>
+        {[...data].map((recipe, i) => (
+          <li key={i}>
             <RecipeCard recipe={recipe} headingLevel="h2" />
           </li>
         ))}
