@@ -21,7 +21,7 @@ const RecipeDetailPage = () => {
 
   return (
     recipe && (
-      <main>
+      <>
         <article>
           <header>
             <h1>{recipe.title}</h1>
@@ -55,7 +55,7 @@ const RecipeDetailPage = () => {
             </ol>
           </section>
         </article>
-      </main>
+      </>
     )
   );
 };

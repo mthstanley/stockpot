@@ -16,10 +16,10 @@ const EditRecipePage = () => {
 
   return (
     recipe && (
-      <main>
+      <>
         <h1>Edit Recipe</h1>
         <RecipeForm recipe={recipe} />
-      </main>
+      </>
     )
   );
 };

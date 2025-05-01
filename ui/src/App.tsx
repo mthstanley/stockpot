@@ -15,43 +15,48 @@ import Signout from "./components/user/Signout";
 function App() {
   return (
     <AuthProvider>
-      <Navbar />
-      <Routes>
-        <Route index element={<HomePage />} />
-        <Route path="users">
-          <Route
-            index
-            element={
-              <RequireAuth>
-                <ProfilePage />
-              </RequireAuth>
-            }
-          />
-          <Route path="signup" element={<SignupPage />} />
-          <Route path="signin" element={<SigninPage />} />
-          <Route path="signout" element={<Signout />} />
-        </Route>
-        <Route path="recipes">
-          <Route index element={<RecipesPage />} />
-          <Route path=":id" element={<RecipeDetailPage />} />
-          <Route
-            path="create"
-            element={
-              <RequireAuth>
-                <CreateRecipePage />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path=":id/edit"
-            element={
-              <RequireAuth>
-                <EditRecipePage />
-              </RequireAuth>
-            }
-          />
-        </Route>
-      </Routes>
+      <header>
+        <Navbar />
+      </header>
+      <main>
+        <Routes>
+          <Route index element={<HomePage />} />
+          <Route path="users">
+            <Route
+              index
+              element={
+                <RequireAuth>
+                  <ProfilePage />
+                </RequireAuth>
+              }
+            />
+            <Route path="signup" element={<SignupPage />} />
+            <Route path="signin" element={<SigninPage />} />
+            <Route path="signout" element={<Signout />} />
+          </Route>
+          <Route path="recipes">
+            <Route index element={<RecipesPage />} />
+            <Route path=":id" element={<RecipeDetailPage />} />
+            <Route
+              path="create"
+              element={
+                <RequireAuth>
+                  <CreateRecipePage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path=":id/edit"
+              element={
+                <RequireAuth>
+                  <EditRecipePage />
+                </RequireAuth>
+              }
+            />
+          </Route>
+        </Routes>
+      </main>
+      <footer></footer>
     </AuthProvider>
   );
 }
