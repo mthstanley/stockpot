@@ -35,8 +35,8 @@ const RecipeDetailPage = () => {
             <h2>Ingredients</h2>
             <ul>
               {recipe.ingredients.map(
-                (ingredient: GetRecipeIngredientResponse) => (
-                  <li>
+                (ingredient: GetRecipeIngredientResponse, i: number) => (
+                  <li key={i}>
                     {ingredient.quantity} {ingredient.units}{" "}
                     {ingredient.ingredient}, {ingredient.preparation}
                   </li>
@@ -49,8 +49,8 @@ const RecipeDetailPage = () => {
             <ol>
               {recipe.steps
                 .sort((a, b) => a.ordinal - b.ordinal)
-                .map((step: GetStepResponse) => (
-                  <li>{step.instruction}</li>
+                .map((step: GetStepResponse, i: number) => (
+                  <li key={i}>{step.instruction}</li>
                 ))}
             </ol>
           </section>
