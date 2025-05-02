@@ -90,6 +90,11 @@ textarea:not([rows]) {
 }
 
 /* Main Styling */
+#root {
+  min-height: 100vh;
+  width: 100%;
+}
+
 nav {
   ul {
     list-style-type: none;
@@ -104,13 +109,13 @@ nav {
     li {
       a {
         display: block;
-        color: white;
+        color: currentColor;
         text-align: center;
         padding: 14px 16px;
         text-decoration: none;
 
         &:hover {
-          color: white;
+          color: currentColor;
           background-color: #111;
         }
 
@@ -132,6 +137,60 @@ nav {
 
 main {
   /* Offset to account for navbar */
-  padding-top: 52px;
+  padding: 5% 10% 0% 10%;
   min-height: 100vh;
+}
+
+.recipe {
+  .summary {
+    display: flex;
+    border-bottom: 1px solid;
+
+    .title {
+      flex: 40;
+      padding: 2em;
+
+      h1 {
+        margin: 0;
+      }
+    }
+
+    .meta {
+      flex: 60;
+      padding: 2em;
+
+      dl {
+        margin: 0;
+        display: grid;
+        grid-template-columns: max-content auto;
+      }
+
+      dt {
+        grid-column-start: 1;
+        font-weight: bold;
+
+        &:after {
+          content: ":";
+        }
+      }
+
+      dd {
+        grid-column-start: 2;
+      }
+    }
+  }
+
+  .content {
+    display: flex;
+
+    .ingredients {
+      flex: 40;
+      padding: 2em;
+    }
+
+    .steps {
+      flex: 60;
+      padding: 2em;
+    }
+  }
 }
