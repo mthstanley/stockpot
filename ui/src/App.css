@@ -194,3 +194,49 @@ main {
     }
   }
 }
+
+.page-title {
+  padding: 2em;
+
+  h1 {
+    margin: 0;
+  }
+}
+
+.recipe-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+
+  li {
+    flex: 33%;
+    padding: 2em;
+  }
+
+  .recipe-card {
+    .title {
+      padding: 2em;
+    }
+
+    dl {
+      margin: 0;
+      display: grid;
+      grid-template-columns: max-content auto;
+    }
+
+    dt {
+      grid-column-start: 1;
+      font-weight: bold;
+
+      &:after {
+        content: ":";
+      }
+    }
+
+    dd {
+      grid-column-start: 2;
+    }
+  }
+}
