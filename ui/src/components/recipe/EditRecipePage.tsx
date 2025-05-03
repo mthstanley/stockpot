@@ -17,7 +17,6 @@ const EditRecipePage = () => {
   return (
     recipe && (
       <>
-        <h1>Edit Recipe</h1>
         <RecipeForm recipe={recipe} />
       </>
     )
