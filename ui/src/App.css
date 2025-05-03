@@ -149,7 +149,7 @@ main {
     min-width: 0;
 
     .title {
-      flex: 40;
+      flex: 40%;
       padding: 2em;
 
       h1 {
@@ -158,7 +158,7 @@ main {
     }
 
     .meta {
-      flex: 60;
+      flex: 60%;
       padding: 2em;
 
       dl {
@@ -187,12 +187,12 @@ main {
     flex-wrap: wrap;
 
     .ingredients {
-      flex: 40;
+      flex: 40%;
       padding: 2em;
     }
 
     .steps {
-      flex: 60;
+      flex: 60%;
       padding: 2em;
     }
   }
