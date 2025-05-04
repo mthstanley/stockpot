@@ -158,6 +158,7 @@ main {
     }
 
     .meta {
+      width: 100%;
       flex: 60%;
       padding: 2em;
 
@@ -165,6 +166,7 @@ main {
         margin: 0;
         display: grid;
         grid-template-columns: max-content auto;
+        grid-column-gap: 5%;
       }
 
       dt {
@@ -177,6 +179,7 @@ main {
       }
 
       dd {
+        margin: 0;
         grid-column-start: 2;
       }
     }
@@ -227,6 +230,7 @@ main {
       margin: 0;
       display: grid;
       grid-template-columns: max-content auto;
+      grid-column-gap: 5%;
     }
 
     dt {
@@ -239,6 +243,7 @@ main {
     }
 
     dd {
+      margin: 0;
       grid-column-start: 2;
     }
   }
@@ -261,6 +266,18 @@ form.recipe {
     border: 0;
     margin: 0;
     padding: 0;
+  }
+
+  .meta {
+    input {
+      width: 100%;
+      max-width: 200px;
+    }
+
+    select {
+      width: 100%;
+      max-width: 100px;
+    }
   }
 
   .ingredients {
