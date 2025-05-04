@@ -96,42 +96,63 @@ textarea:not([rows]) {
 }
 
 nav {
-  ul {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    background-color: #333;
-    position: fixed;
-    top: 0;
-    width: 100%;
+  position: fixed;
+  top: 0;
+  background-color: #333;
+  width: 100%;
+  height: 70px;
 
-    li {
-      a {
-        display: block;
-        color: currentColor;
-        text-align: center;
-        padding: 14px 16px;
-        text-decoration: none;
+  .content {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
 
-        &:hover {
+    .brand {
+      margin: 0;
+      padding: 14px 16px;
+    }
+
+    ul {
+      display: flex;
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      height: 100%;
+
+      li {
+        a {
+          display: flex;
+          justify-content: center;
+          align-items: center;
           color: currentColor;
-          background-color: #111;
+          text-align: center;
+          padding: 14px 16px;
+          text-decoration: none;
+          height: 100%;
+
+          &:hover {
+            color: currentColor;
+            background-color: #111;
+          }
+
+          &.active {
+            background-color: #403eb8;
+          }
         }
-
-        &.active {
-          background-color: #403eb8;
-        }
-      }
-
-      &.primary {
-        float: left;
-      }
-
-      &.secondary {
-        float: right;
       }
     }
+  }
+}
+
+@media all and (max-width: 767px) {
+  nav {
+    height: auto;
+  }
+
+  nav .content {
+    flex-direction: column;
   }
 }
 
