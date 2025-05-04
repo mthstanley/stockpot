@@ -15,9 +15,9 @@ const RecipeList = () => {
 
   return (
     <>
-      <ul>
-        {[...data].map((recipe) => (
-          <li>
+      <ul className="recipe-list">
+        {[...data].map((recipe: GetRecipeResponse, i: number) => (
+          <li key={i}>
             <RecipeCard recipe={recipe} headingLevel="h2" />
           </li>
         ))}

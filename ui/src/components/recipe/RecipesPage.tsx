@@ -4,10 +4,15 @@ import RecipeList from "./RecipeList";
 const RecipesPage = () => {
   return (
     <>
-      <h1>Recipes</h1>
-      <p>
-        <Link to="create">Create New Recipe</Link>
-      </p>
+      <header className="page-title">
+        <h1>
+          Recipes (
+          <i>
+            <Link to="create">New</Link>
+          </i>
+          )
+        </h1>
+      </header>
       <RecipeList />
     </>
   );

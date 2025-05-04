@@ -13,7 +13,7 @@ const RecipeCard = ({
 }) => {
   const Heading = headingLevel;
   return (
-    <section>
+    <section className="recipe-card">
       <Heading>
         <Link to={`/recipes/${recipe.id}`}>{recipe.title}</Link>
       </Heading>

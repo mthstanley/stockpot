@@ -29,172 +29,199 @@ const RecipeForm = ({ recipe }: { recipe?: MutateRecipeRequest }) => {
     (map, { id }, index) => ({ ...map, [id]: index }),
     {},
   );
+  const stepOrdinalIndices: Record<number, number> = steps.fields.reduce(
+    (map, { ordinal }, index) => ({ ...map, [ordinal]: index }),
+    {},
+  );
+  const sortedStepFields = [...steps.fields].sort(
+    (a, b) => a.ordinal - b.ordinal,
+  );
 
   return (
-    <form onSubmit={onSubmit}>
-      <fieldset>
-        <legend>Details</legend>
-        <p>
-          <label htmlFor="title">Title</label>
-          <input id="title" {...register("title", { required: true })} />
-        </p>
-        <p>
-          <label htmlFor="description">Description</label>
-          <input
-            id="description"
-            {...register("description", { setValueAs: setEmptyOrStr })}
-          />
-        </p>
-        <p>
-          <label htmlFor="prepTime">Prep Time</label>
-          <input
-            id="prepTime"
-            type="number"
-            {...register("prepTime", { valueAsNumber: true })}
-          />
-        </p>
-        <p>
-          <label htmlFor="cookTime">Cook Time</label>
-          <input
-            id="cookTime"
-            type="number"
-            {...register("cookTime", { valueAsNumber: true })}
-          />
-        </p>
-        <p>
-          <label htmlFor="inactiveTime">Inactive Time</label>
-          <input
-            id="inactiveTime"
-            type="number"
-            {...register("inactiveTime", { valueAsNumber: true })}
-          />
-        </p>
-        <p>
-          <label htmlFor="yieldQuantity">Yield Quantity</label>
-          <input
-            id="yieldQuantity"
-            type="number"
-            {...register("yieldQuantity", {
-              required: true,
-              valueAsNumber: true,
-            })}
-          />
-        </p>
-        <p>
-          <label htmlFor="yieldUnits">Yield Units</label>
-          <input
-            id="yieldUnits"
-            {...register("yieldUnits", {
-              required: true,
-              setValueAs: setEmptyOrStr,
-            })}
-          />
-        </p>
+    <form onSubmit={onSubmit} className="recipe">
+      <fieldset className="summary">
+        <hgroup className="title">
+          <h1>
+            <input
+              id="title"
+              placeholder="Title"
+              {...register("title", { required: true })}
+            />
+          </h1>
+          <p className="description">
+            <textarea
+              id="description"
+              placeholder="A description of your dish..."
+              {...register("description", { setValueAs: setEmptyOrStr })}
+            />
+          </p>
+        </hgroup>
+        <div className="meta">
+          <dl>
+            <dt>
+              <label htmlFor="prepTime">Prep Time</label>
+            </dt>
+            <dd>
+              <input
+                id="prepTime"
+                type="number"
+                {...register("prepTime", { valueAsNumber: true })}
+              />{" "}
+              seconds
+            </dd>
+            <dt>
+              <label htmlFor="cookTime">Cook Time</label>
+            </dt>
+            <dd>
+              <input
+                id="cookTime"
+                type="number"
+                {...register("cookTime", { valueAsNumber: true })}
+              />{" "}
+              seconds
+            </dd>
+            <dt>
+              <label htmlFor="inactiveTime">Inactive Time</label>
+            </dt>
+            <dd>
+              <input
+                id="inactiveTime"
+                type="number"
+                {...register("inactiveTime", { valueAsNumber: true })}
+              />{" "}
+              seconds
+            </dd>
+            <dt>Yields</dt>
+            <dd>
+              <input
+                id="yieldQuantity"
+                type="number"
+                {...register("yieldQuantity", {
+                  required: true,
+                  valueAsNumber: true,
+                })}
+              />
+              <select
+                id="yieldUnits"
+                {...register("yieldUnits", {
+                  required: true,
+                  setValueAs: setEmptyOrStr,
+                })}
+              >
+                <option value="grams" selected>
+                  grams
+                </option>
+              </select>
+            </dd>
+          </dl>
+        </div>
       </fieldset>
+      <div className="content">
+        <fieldset className="ingredients">
+          <h2>Ingredients</h2>
+          <ul>
+            {ingredients.fields.map((item, index) => (
+              <li key={item.id} className="ingredient">
+                <div>
+                  <p>
+                    <input
+                      id={`ingredients.${index}.quantity`}
+                      type="number"
+                      {...register(`ingredients.${index}.quantity`, {
+                        required: true,
+                        valueAsNumber: true,
+                      })}
+                    />
+                    <select
+                      id={`ingredients.${index}.units`}
+                      {...register(`ingredients.${index}.units`, {
+                        required: true,
+                        setValueAs: setEmptyOrStr,
+                      })}
+                    >
+                      <option value="grams" selected>
+                        grams
+                      </option>
+                    </select>
+                    <input
+                      id={`ingredients.${index}.ingredient`}
+                      placeholder="Ingredient"
+                      {...register(`ingredients.${index}.ingredient`, {
+                        required: true,
+                        setValueAs: setEmptyOrStr,
+                      })}
+                    />
+                    <input
+                      id={`ingredients.${index}.preparation`}
+                      placeholder="Preparation"
+                      {...register(`ingredients.${index}.preparation`, {
+                        setValueAs: setEmptyOrStr,
+                      })}
+                    />
+                  </p>
+                  <p>
+                    <button
+                      type="button"
+                      onClick={() => ingredients.remove(index)}
+                    >
+                      Delete
+                    </button>
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            onClick={() =>
+              ingredients.append({
+                ingredient: "",
+                quantity: NaN,
+                units: "grams",
+                preparation: "",
+              })
+            }
+          >
+            Add Ingredient
+          </button>
+        </fieldset>
 
-      <fieldset>
-        <legend>Ingredients</legend>
-        <ul>
-          {ingredients.fields.map((item, index) => (
-            <li key={item.id}>
-              <p>
-                <label htmlFor={`ingredients.${index}.ingredient`}>
-                  Ingredient
-                </label>
-                <input
-                  id={`ingredients.${index}.ingredient`}
-                  {...register(`ingredients.${index}.ingredient`, {
-                    required: true,
-                    setValueAs: setEmptyOrStr,
-                  })}
-                />
-                <label htmlFor={`ingredients.${index}.quantity`}>
-                  Quantity
-                </label>
-                <input
-                  id={`ingredients.${index}.quantity`}
-                  type="number"
-                  {...register(`ingredients.${index}.quantity`, {
-                    required: true,
-                    valueAsNumber: true,
-                  })}
-                />
-                <label htmlFor={`ingredients.${index}.units`}>Units</label>
-                <input
-                  id={`ingredients.${index}.units`}
-                  {...register(`ingredients.${index}.units`, {
-                    required: true,
-                    setValueAs: setEmptyOrStr,
-                  })}
-                />
-                <label htmlFor={`ingredients.${index}.preparation`}>
-                  Preparation
-                </label>
-                <input
-                  id={`ingredients.${index}.preparation`}
-                  {...register(`ingredients.${index}.preparation`, {
-                    setValueAs: setEmptyOrStr,
-                  })}
-                />
-                <button type="button" onClick={() => ingredients.remove(index)}>
-                  Delete
-                </button>
-              </p>
-            </li>
-          ))}
-        </ul>
-        <button
-          type="button"
-          onClick={() =>
-            ingredients.append({
-              ingredient: "",
-              quantity: NaN,
-              units: "",
-              preparation: "",
-            })
-          }
-        >
-          Add Ingredient
-        </button>
-      </fieldset>
-
-      <fieldset>
-        <legend>Steps</legend>
-        <ol>
-          {steps.fields
-            .sort((a, b) => a.ordinal - b.ordinal)
-            .map((item, index) => (
-              <li key={item.id}>
-                <label htmlFor={`steps.${stepIndices[item.id]}.instruction`}>
-                  Instruction
-                </label>
-                <input
+        <fieldset className="steps">
+          <h2>Steps</h2>
+          <ol>
+            {sortedStepFields.map((item) => (
+              <li key={item.id} className="step">
+                <textarea
                   id={`steps.${stepIndices[item.id]}.instruction`}
+                  placeholder="A description of what to do..."
                   {...register(`steps.${stepIndices[item.id]}.instruction`, {
                     required: true,
                     setValueAs: setEmptyOrStr,
                   })}
                 />
-                {index === steps.fields.length - 1 && (
-                  <button
-                    type="button"
-                    onClick={() => steps.remove(stepIndices[item.id])}
-                  >
-                    Delete
-                  </button>
-                )}
               </li>
             ))}
-        </ol>
-        <button
-          type="button"
-          onClick={() =>
-            steps.append({ ordinal: steps.fields.length, instruction: "" })
-          }
-        >
-          Add Step
-        </button>
-      </fieldset>
+          </ol>
+          <button
+            type="button"
+            onClick={() =>
+              steps.append({ ordinal: steps.fields.length, instruction: "" })
+            }
+          >
+            Add Step
+          </button>
+          {steps.fields.length > 0 && (
+            <button
+              type="button"
+              onClick={() =>
+                steps.remove(stepOrdinalIndices[steps.fields.length - 1])
+              }
+            >
+              Remove Step
+            </button>
+          )}
+        </fieldset>
+      </div>
 
       <input type="submit" />
     </form>
