@@ -21,41 +21,50 @@ const RecipeDetailPage = () => {
 
   return (
     recipe && (
-      <main>
-        <article>
-          <header>
-            <h1>{recipe.title}</h1>
-            <RecipeMeta recipe={recipe} />
-            <p>{recipe.description}</p>
-            <p>
-              <Link to={`edit`}>Edit Recipe</Link>
-            </p>
+      <>
+        <article className="recipe">
+          <header className="summary">
+            <hgroup className="title">
+              <h1>
+                {recipe.title} (
+                <i>
+                  <Link to={`edit`}>Edit</Link>
+                </i>
+                )
+              </h1>
+              <p className="description">{recipe.description}</p>
+            </hgroup>
+            <div className="meta">
+              <RecipeMeta recipe={recipe} />
+            </div>
           </header>
-          <section>
-            <h2>Ingredients</h2>
-            <ul>
-              {recipe.ingredients.map(
-                (ingredient: GetRecipeIngredientResponse) => (
-                  <li>
-                    {ingredient.quantity} {ingredient.units}{" "}
-                    {ingredient.ingredient}, {ingredient.preparation}
-                  </li>
-                ),
-              )}
-            </ul>
-          </section>
-          <section>
-            <h2>Steps</h2>
-            <ol>
-              {recipe.steps
-                .sort((a, b) => a.ordinal - b.ordinal)
-                .map((step: GetStepResponse) => (
-                  <li>{step.instruction}</li>
-                ))}
-            </ol>
-          </section>
+          <div className="content">
+            <section className="ingredients">
+              <h2>Ingredients</h2>
+              <ul>
+                {recipe.ingredients.map(
+                  (ingredient: GetRecipeIngredientResponse, i: number) => (
+                    <li key={i}>
+                      {ingredient.quantity} {ingredient.units}{" "}
+                      {ingredient.ingredient}, {ingredient.preparation}
+                    </li>
+                  ),
+                )}
+              </ul>
+            </section>
+            <section className="steps">
+              <h2>Steps</h2>
+              <ol>
+                {recipe.steps
+                  .sort((a, b) => a.ordinal - b.ordinal)
+                  .map((step: GetStepResponse, i: number) => (
+                    <li key={i}>{step.instruction}</li>
+                  ))}
+              </ol>
+            </section>
+          </div>
         </article>
-      </main>
+      </>
     )
   );
 };

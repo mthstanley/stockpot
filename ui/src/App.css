@@ -1,42 +1,339 @@
+/* Box sizing rules */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Prevent font size inflation */
+html {
+  -moz-text-size-adjust: none;
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
+}
+
+/* Remove default margin in favour of better control in authored CSS */
+body,
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+blockquote,
+dl,
+dd {
+  margin-block-end: 0;
+}
+
+/* Remove list styles on ul, ol elements with a list role, which suggests default styling will be removed */
+ul[role="list"],
+ol[role="list"] {
+  list-style: none;
+}
+
+/* Set core body defaults */
+body {
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+/* Set shorter line heights on headings and interactive elements */
+h1,
+h2,
+h3,
+h4,
+button,
+input,
+label {
+  line-height: 1.1;
+}
+
+/* Balance text wrapping on headings */
+h1,
+h2,
+h3,
+h4 {
+  text-wrap: balance;
+}
+
+/* A elements that don't have a class get default styles */
+a:not([class]) {
+  text-decoration-skip-ink: auto;
+  color: currentColor;
+}
+
+/* Make images easier to work with */
+img,
+picture {
+  max-width: 100%;
+  display: block;
+}
+
+/* Inherit fonts for inputs and buttons */
+input,
+button,
+textarea,
+select {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* Make sure textareas without a rows attribute are not tiny */
+textarea:not([rows]) {
+  min-height: 10em;
+}
+
+/* Anything that has been anchored to should have extra scroll margin */
+:target {
+  scroll-margin-block: 5ex;
+}
+
+/* Main Styling */
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  min-height: 100vh;
+  width: 100%;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
+nav {
+  position: fixed;
+  top: 0;
+  background-color: #333;
+  width: 100%;
+  height: 70px;
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+  .content {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+
+    .brand {
+      margin: 0;
+      padding: 14px 16px;
+    }
+
+    ul {
+      display: flex;
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      height: 100%;
+
+      li {
+        a {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          color: currentColor;
+          text-align: center;
+          padding: 14px 16px;
+          text-decoration: none;
+          height: 100%;
+
+          &:hover {
+            color: currentColor;
+            background-color: #111;
+          }
+
+          &.active {
+            background-color: #403eb8;
+          }
+        }
+      }
+    }
   }
-  to {
-    transform: rotate(360deg);
+}
+
+@media all and (max-width: 767px) {
+  nav {
+    height: auto;
+  }
+
+  nav .content {
+    flex-direction: column;
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+main {
+  /* Offset to account for navbar */
+  padding: 5% 10% 0% 10%;
+  min-height: 100vh;
+}
+
+.recipe {
+  .summary {
+    display: flex;
+    flex-wrap: wrap;
+    border-bottom: 1px solid;
+    min-width: 0;
+
+    .title {
+      flex: 40%;
+      padding: 2em;
+
+      h1 {
+        margin: 0;
+      }
+    }
+
+    .meta {
+      width: 100%;
+      flex: 60%;
+      padding: 2em;
+
+      dl {
+        margin: 0;
+        display: grid;
+        grid-template-columns: max-content auto;
+        grid-column-gap: 5%;
+      }
+
+      dt {
+        grid-column-start: 1;
+        font-weight: bold;
+
+        &:after {
+          content: ":";
+        }
+      }
+
+      dd {
+        margin: 0;
+        grid-column-start: 2;
+      }
+    }
+  }
+
+  .content {
+    display: flex;
+    flex-wrap: wrap;
+
+    .ingredients {
+      flex: 40%;
+      padding: 2em;
+    }
+
+    .steps {
+      flex: 60%;
+      padding: 2em;
+    }
   }
 }
 
-.card {
+.page-title {
   padding: 2em;
+
+  h1 {
+    margin: 0;
+  }
 }
 
-.read-the-docs {
-  color: #888;
+.recipe-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+
+  li {
+    flex: 33%;
+    padding: 2em;
+  }
+
+  .recipe-card {
+    .title {
+      padding: 2em;
+    }
+
+    dl {
+      margin: 0;
+      display: grid;
+      grid-template-columns: max-content auto;
+      grid-column-gap: 5%;
+    }
+
+    dt {
+      grid-column-start: 1;
+      font-weight: bold;
+
+      &:after {
+        content: ":";
+      }
+    }
+
+    dd {
+      margin: 0;
+      grid-column-start: 2;
+    }
+  }
+}
+
+form.recipe {
+  .title {
+    input {
+      width: 100%;
+    }
+
+    .description {
+      textarea {
+        width: 100%;
+      }
+    }
+  }
+
+  fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  .meta {
+    input {
+      width: 100%;
+      max-width: 200px;
+    }
+
+    select {
+      width: 100%;
+      max-width: 100px;
+    }
+  }
+
+  .ingredients {
+    .ingredient {
+      div {
+        display: flex;
+      }
+
+      p {
+        display: flex;
+        flex-wrap: wrap;
+      }
+
+      input {
+        width: 100%;
+        min-width: 100px;
+        flex: 1;
+      }
+
+      select {
+        width: 100%;
+        min-width: 100px;
+        flex: 1;
+      }
+    }
+  }
+
+  .steps {
+    .step {
+      margin-bottom: 1em;
+
+      textarea {
+        width: 100%;
+        vertical-align: top;
+      }
+    }
+  }
 }
