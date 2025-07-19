@@ -110,40 +110,57 @@ nav {
     height: 100%;
 
     .brand {
-      margin: 0;
+      height: 100%;
+      display: table;
       padding: 14px 16px;
+
+      h2 {
+        margin: 0;
+        display: table-cell;
+        vertical-align: middle;
+      }
     }
 
-    ul {
-      display: flex;
-      list-style-type: none;
-      margin: 0;
-      padding: 0;
+    .links {
       height: 100%;
 
-      li {
-        a {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          color: currentColor;
-          text-align: center;
-          padding: 14px 16px;
-          text-decoration: none;
-          height: 100%;
+      ul {
+        display: flex;
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        height: 100%;
 
-          &:hover {
+        li {
+          a {
+            display: flex;
+            justify-content: center;
+            align-items: center;
             color: currentColor;
-            background-color: #111;
-          }
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+            height: 100%;
 
-          &.active {
-            background-color: #403eb8;
+            &:hover {
+              color: currentColor;
+              background-color: #111;
+            }
+
+            &.active {
+              background-color: #403eb8;
+            }
           }
         }
       }
     }
   }
+}
+
+main {
+  /* Offset to account for navbar */
+  padding: 70px 10% 0% 10%;
+  min-height: 100vh;
 }
 
 @media all and (max-width: 767px) {
@@ -153,13 +170,20 @@ nav {
 
   nav .content {
     flex-direction: column;
-  }
-}
+    height: 140px;
 
-main {
-  /* Offset to account for navbar */
-  padding: 5% 10% 0% 10%;
-  min-height: 100vh;
+    .brand {
+      height: 50%;
+    }
+
+    .links {
+      height: 50%;
+    }
+  }
+
+  main {
+    padding: 140px 0% 0% 0%;
+  }
 }
 
 .recipe {
