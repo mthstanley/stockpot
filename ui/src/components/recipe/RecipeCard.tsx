@@ -17,7 +17,9 @@ const RecipeCard = ({
       <Heading>
         <Link to={`/recipes/${recipe.id}`}>{recipe.title}</Link>
       </Heading>
-      <RecipeMeta recipe={recipe} />
+      <p>
+        <RecipeMeta recipe={recipe} />
+      </p>
       <p>{recipe.description}</p>
     </section>
   );
