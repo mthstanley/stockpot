@@ -28,25 +28,36 @@ const SigninPage = () => {
   });
 
   return (
-    <div>
-      <h1>Sign-In</h1>
-      <p>You must log in to view the page at {from}</p>
+    <div className="auth">
+      <header className="auth-header page-title">
+        <hgroup>
+          <h1>Sign-In</h1>
+          <p>You must log in to view the page at {from}</p>
+        </hgroup>
+      </header>
 
-      <form onSubmit={onSubmit}>
-        <p>
-          <label htmlFor="username">Username</label>
-          <input id="username" {...register("username", { required: true })} />
-        </p>
-        <p>
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            {...register("password", { required: true })}
-          />
-        </p>
-        <input type="submit" value="Sign-in" />
-      </form>
+      <div className="auth-body">
+        <form onSubmit={onSubmit}>
+          <p>
+            <label htmlFor="username">Username</label>
+            <input
+              id="username"
+              {...register("username", { required: true })}
+            />
+          </p>
+          <p>
+            <label htmlFor="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              {...register("password", { required: true })}
+            />
+          </p>
+          <p>
+            <input type="submit" value="Sign-in" />
+          </p>
+        </form>
+      </div>
     </div>
   );
 };

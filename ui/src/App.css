@@ -364,3 +364,32 @@ form.recipe {
     }
   }
 }
+
+.auth {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 20em;
+  margin: 0 auto;
+
+  text-align: center;
+
+  .auth-header {
+    width: 100%;
+  }
+
+  .auth-body {
+    width: 100%;
+
+    label {
+      display: block;
+      text-align: left;
+      margin-bottom: 0.25em;
+    }
+
+    input {
+      width: 100%;
+    }
+  }
+}
