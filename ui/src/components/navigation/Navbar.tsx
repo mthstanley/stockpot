@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { NavLink } from "react-router";
 import { useAuth } from "../auth/authContext";
 
 const Navbar = () => {
@@ -6,33 +6,40 @@ const Navbar = () => {
 
   return (
     <nav>
-      <ul>
-        <li>
-          <Link to="/">Home</Link>
-        </li>
-        <li>
-          <Link to="recipes">Recipes</Link>
-        </li>
-        {auth.user ? (
-          <>
+      <div className="content">
+        <div className="brand">
+          <h2>Stockpot</h2>
+        </div>
+        <div className="links">
+          <ul>
             <li>
-              <Link to="users">Profile</Link>
+              <NavLink to="/">Home</NavLink>
             </li>
             <li>
-              <Link to="users/signout">Sign-out</Link>
+              <NavLink to="recipes">Recipes</NavLink>
             </li>
-          </>
-        ) : (
-          <>
-            <li>
-              <Link to="users/signin">Sign-in</Link>
-            </li>
-            <li>
-              <Link to="users/signup">Sign-up</Link>
-            </li>
-          </>
-        )}
-      </ul>
+            {auth.user ? (
+              <>
+                <li>
+                  <NavLink to="users">Profile</NavLink>
+                </li>
+                <li>
+                  <NavLink to="users/signout">Sign-out</NavLink>
+                </li>
+              </>
+            ) : (
+              <>
+                <li>
+                  <NavLink to="users/signin">Sign-in</NavLink>
+                </li>
+                <li>
+                  <NavLink to="users/signup">Sign-up</NavLink>
+                </li>
+              </>
+            )}
+          </ul>
+        </div>
+      </div>
     </nav>
   );
 };
